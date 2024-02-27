@@ -6,8 +6,27 @@ const Eleve = require("../models/Eleve");
 router.get("/MATHS/getResults", async (req, res) => {
   try {
     if (req.body.mdp === process.env.MDP_ADMIN) {
+      const response = [];
       const eleves = await Eleve.find();
-      return res.status(200).json(eleves);
+      for (let e = 0; e < eleves.length; e++) {
+        for (let s = 0; s < eleves[e].scores.length; s++) {
+          let rightAnswers = 0;
+          let wrongAnswers = 0;
+          for (let ss = 0; ss < eleves[e].scores[s].score.length; ss++) {
+            rightAnswers += eleves[e].scores[s].score[ss];
+            if (eleves[e].scores[s].score[ss] === 0) {
+              wrongAnswers++;
+            }
+          }
+          response.push({
+            name: eleves[e].name,
+            date: eleves[e].scores[s].date,
+            rightAnswers,
+            wrongAnswers,
+          });
+        }
+      }
+      return res.status(200).json(response);
     } else {
       return res.status(400).json({ message: "Accès non autorisé." });
     }
@@ -19,8 +38,15 @@ router.get("/MATHS/getResults", async (req, res) => {
 // mettre à jour ses résultats
 router.post("/MATHS/addResults", async (req, res) => {
   try {
+    if (!req.body.score || req.body.score.length < 5) {
+      return res.status(400).json({
+        message:
+          "Tu dois faire au moins 5 calculs avant d'enregistrer ton résultat.",
+      });
+    }
     if (req.body.password === process.env.MDP_DEFI) {
       const name = req.body.name;
+      console.log(process.env.ELEVE_1);
       const names = [
         process.env.ELEVE_1,
         process.env.ELEVE_2,
@@ -46,22 +72,27 @@ router.post("/MATHS/addResults", async (req, res) => {
         process.env.ELEVE_22,
         process.env.ELEVE_23,
       ];
-
       for (let n = 0; n < names.length; n++) {
+        console.log(names[n]);
         if (name === names[n]) {
           const date = new Date();
           const score = req.body.score;
-          const eleve = await Eleve.findOne({ name });
+          const eleve = await Eleve.findOne({ name: name });
+          console.log(eleve);
           if (eleve) {
+            console.log("OK");
             const newScores = [...eleve.scores];
+            console.log(newScores);
             newScores.push({ date, score });
-            const eleveUpdated = await findByIdAndUpdate(
+            console.log(newScores);
+            const elevetoUpdate = await Eleve.findByIdAndUpdate(
               eleve._id,
               { scores: newScores },
               { new: true }
             );
-            await eleveUpdated.save();
-            return res.status(200).json(eleveUpdated);
+            console.log(elevetoUpdate);
+            await elevetoUpdate.save();
+            return res.status(200).json(elevetoUpdate);
           } else {
             const newEleve = new Eleve({
               name,
@@ -70,12 +101,11 @@ router.post("/MATHS/addResults", async (req, res) => {
             await newEleve.save();
             return res.status(200).json(newEleve);
           }
-        } else {
-          return res
-            .status(400)
-            .json({ message: "Il n'y a aucun élève enregistré sous ce nom." });
         }
       }
+      return res
+        .status(400)
+        .json({ message: "Il n'y a aucun élève enregistré sous ce nom." });
     } else {
       return res.status(400).json({ message: "Mot de passe incorrect." });
     }
