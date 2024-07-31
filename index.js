@@ -11,6 +11,9 @@ mongoose.connect(process.env.MONGODB_URL + "Perso");
 const mathsElevesRoutes = require("./MATHS/routes/eleve");
 app.use(mathsElevesRoutes);
 
+const romanMailRoutes = require("./ROMAN/routes/mail");
+app.use(romanMailRoutes);
+
 app.all("*", (req, res) => {
   return res.status(404).json("Not found");
 });
