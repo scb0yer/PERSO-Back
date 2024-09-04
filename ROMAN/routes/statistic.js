@@ -15,14 +15,16 @@ router.post("/ROMAN/ip", async (req, res) => {
       }
       if (count === 0) {
         adresses.home_ip.push(req.body.ip);
+        let home_total = 0;
         if (!adresses.home_total) {
-          adresses.home_total = 1;
+          home_total = 1;
         } else {
-          adresses.home_total++;
+          home_total = adresses.home_total + 1;
         }
+        adresses.home_total = home_total;
         const newAdress = await Statistic.findByIdAndUpdate(
           adresses._id,
-          adresses,
+          { adresses },
           { new: true }
         );
       }
@@ -35,11 +37,13 @@ router.post("/ROMAN/ip", async (req, res) => {
       }
       if (count === 0) {
         adresses.jeu_ip.push(req.body.ip);
+        let jeu_total = 0;
         if (!adresses.jeu_total) {
-          adresses.jeu_total = 1;
+          jeu_total = 1;
         } else {
-          adresses.jeu_total++;
+          jeu_total = adresses.jeu_total + 1;
         }
+        adresses.jeu_total = jeu_total;
         const newAdress = await Statistic.findByIdAndUpdate(
           adresses._id,
           adresses,
@@ -55,11 +59,13 @@ router.post("/ROMAN/ip", async (req, res) => {
       }
       if (count === 0) {
         adresses.univers_ip.push(req.body.ip);
+        let univers_total = 0;
         if (!adresses.univers_total) {
-          adresses.univers_total = 1;
+          univers_total = 1;
         } else {
-          adresses.univers_total++;
+          univers_total = adresses.univers_total + 1;
         }
+        adresses.univers_total = home_total;
         const newAdress = await Statistic.findByIdAndUpdate(
           adresses._id,
           adresses,
