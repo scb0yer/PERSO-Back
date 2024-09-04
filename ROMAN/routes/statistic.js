@@ -15,7 +15,51 @@ router.post("/ROMAN/ip", async (req, res) => {
       }
       if (count === 0) {
         adresses.home_ip.push(req.body.ip);
-        adresses.home_total++;
+        if (!adresses.home_total) {
+          adresses.home_total = 1;
+        } else {
+          adresses.home_total++;
+        }
+        const newAdress = await Statistic.findByIdAndUpdate(
+          adresses._id,
+          adresses,
+          { new: true }
+        );
+      }
+    } else if (req.body.page === "jeu") {
+      let count = 0;
+      for (let a = 0; a < adresses.jeu_ip.length; a++) {
+        if (adresses.jeu_ip[a] === req.body.ip) {
+          count++;
+        }
+      }
+      if (count === 0) {
+        adresses.jeu_ip.push(req.body.ip);
+        if (!adresses.jeu_total) {
+          adresses.jeu_total = 1;
+        } else {
+          adresses.jeu_total++;
+        }
+        const newAdress = await Statistic.findByIdAndUpdate(
+          adresses._id,
+          adresses,
+          { new: true }
+        );
+      }
+    } else if (req.body.page === "univers") {
+      let count = 0;
+      for (let a = 0; a < adresses.univers_ip.length; a++) {
+        if (adresses.univers_ip[a] === req.body.ip) {
+          count++;
+        }
+      }
+      if (count === 0) {
+        adresses.univers_ip.push(req.body.ip);
+        if (!adresses.univers_total) {
+          adresses.univers_total = 1;
+        } else {
+          adresses.univers_total++;
+        }
         const newAdress = await Statistic.findByIdAndUpdate(
           adresses._id,
           adresses,
