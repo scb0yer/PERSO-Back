@@ -13,76 +13,52 @@ router.post("/ROMAN/ip", async (req, res) => {
         adresses.home_ip.push(req.body.ip);
         adresses.home_total = (adresses.home_total || 0) + 1;
       }
-      let count = 0;
-      for (let a = 0; a < adresses.home_ip.length; a++) {
-        if (adresses.home_ip[a] === req.body.ip) {
-          count++;
-        }
+
+      await Statistic.findByIdAndUpdate(
+        adresses._id,
+        {
+          home_ip: adresses.home_ip,
+          home_total: adresses.home_total,
+        },
+        { new: true }
+      );
+    } else if (req.body.page === "jeu") {
+      let ipAlreadyExists = adresses.jeu_ip.includes(req.body.ip);
+
+      if (!ipAlreadyExists) {
+        adresses.jeu_ip.push(req.body.ip);
+        adresses.jeu_total = (adresses.jeu_total || 0) + 1;
       }
-      if (count === 0) {
-        adresses.home_ip.push(req.body.ip);
-        let home_total = 0;
-        if (!adresses.home_total) {
-          home_total = 1;
-        } else {
-          home_total = adresses.home_total + 1;
-        }
-        adresses.home_total = home_total;
-        const newAdress = await Statistic.findByIdAndUpdate(
-          adresses._id,
-          { adresses },
-          { new: true }
-        );
+
+      await Statistic.findByIdAndUpdate(
+        adresses._id,
+        {
+          jeu_ip: adresses.jeu_ip,
+          jeu_total: adresses.jeu_total,
+        },
+        { new: true }
+      );
+    } else if (req.body.page === "univers") {
+      let ipAlreadyExists = adresses.univers_ip.includes(req.body.ip);
+
+      if (!ipAlreadyExists) {
+        adresses.univers_ip.push(req.body.ip);
+        adresses.univers_total = (adresses.univers_total || 0) + 1;
       }
+
+      await Statistic.findByIdAndUpdate(
+        adresses._id,
+        {
+          univers_ip: adresses.univers_ip,
+          univers_total: adresses.univers_total,
+        },
+        { new: true }
+      );
     }
-    // } else if (req.body.page === "jeu") {
-    //   let count = 0;
-    //   for (let a = 0; a < adresses.jeu_ip.length; a++) {
-    //     if (adresses.jeu_ip[a] === req.body.ip) {
-    //       count++;
-    //     }
-    //   }
-    //   if (count === 0) {
-    //     adresses.jeu_ip.push(req.body.ip);
-    //     let jeu_total = 0;
-    //     if (!adresses.jeu_total) {
-    //       jeu_total = 1;
-    //     } else {
-    //       jeu_total = adresses.jeu_total + 1;
-    //     }
-    //     adresses.jeu_total = jeu_total;
-    //     const newAdress = await Statistic.findByIdAndUpdate(
-    //       adresses._id,
-    //       adresses,
-    //       { new: true }
-    //     );
-    //   }
-    // } else if (req.body.page === "univers") {
-    //   let count = 0;
-    //   for (let a = 0; a < adresses.univers_ip.length; a++) {
-    //     if (adresses.univers_ip[a] === req.body.ip) {
-    //       count++;
-    //     }
-    //   }
-    //   if (count === 0) {
-    //     adresses.univers_ip.push(req.body.ip);
-    //     let univers_total = 0;
-    //     if (!adresses.univers_total) {
-    //       univers_total = 1;
-    //     } else {
-    //       univers_total = adresses.univers_total + 1;
-    //     }
-    //     adresses.univers_total = home_total;
-    //     const newAdress = await Statistic.findByIdAndUpdate(
-    //       adresses._id,
-    //       adresses,
-    //       { new: true }
-    //     );
-    //   }
-    // }
-    return res.status(200).json(response);
+
+    return res.status(200).json({ message: "Les statistiques sont à jour" });
   } catch (error) {
-    return res.status(400).json(error);
+    return res.status(400).json(error.message);
   }
 });
 
@@ -102,9 +78,7 @@ router.post("/ROMAN/archive", async (req, res) => {
       await newStatistic.save();
       return res.status(200).json(response);
     } else {
-      return res
-        .status(500)
-        .json({ message: "Il faut indiquer le nom de la session" });
+      return res.status(500).json({ message: "Les statistiques sont à jour" });
     }
   } catch (error) {
     return res.status(400).json(error);
