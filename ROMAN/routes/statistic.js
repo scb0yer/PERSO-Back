@@ -5,9 +5,14 @@ const Statistic = require("../models/Statistic");
 // vérifier si l'IP existe, sinon l'enregistrer et ajouter la visite.
 router.post("/ROMAN/ip", async (req, res) => {
   try {
+    let ipAlreadyExists = false;
     const adresses = await Statistic.findOne({ status: "encours" });
     if (req.body.page === "home") {
-      let ipAlreadyExists = adresses.home_ip.includes(req.body.ip);
+      if (adresses.home_ip) {
+        ipAlreadyExists = adresses.home_ip.includes(req.body.ip);
+      } else {
+        adresses.home_ip = [];
+      }
 
       if (!ipAlreadyExists) {
         adresses.home_ip.push(req.body.ip);
@@ -23,8 +28,11 @@ router.post("/ROMAN/ip", async (req, res) => {
         { new: true }
       );
     } else if (req.body.page === "jeu") {
-      let ipAlreadyExists = adresses.jeu_ip.includes(req.body.ip);
-
+      if (adresses.jeu) {
+        ipAlreadyExists = adresses.jeu_ip.includes(req.body.ip);
+      } else {
+        adresses.jeu_ip = [];
+      }
       if (!ipAlreadyExists) {
         adresses.jeu_ip.push(req.body.ip);
         adresses.jeu_total = (adresses.jeu_total || 0) + 1;
@@ -39,8 +47,11 @@ router.post("/ROMAN/ip", async (req, res) => {
         { new: true }
       );
     } else if (req.body.page === "univers") {
-      let ipAlreadyExists = adresses.univers_ip.includes(req.body.ip);
-
+      if (adresses.univers_ip) {
+        ipAlreadyExists = adresses.univers_ip.includes(req.body.ip);
+      } else {
+        adresses.univers_ip = [];
+      }
       if (!ipAlreadyExists) {
         adresses.univers_ip.push(req.body.ip);
         adresses.univers_total = (adresses.univers_total || 0) + 1;
