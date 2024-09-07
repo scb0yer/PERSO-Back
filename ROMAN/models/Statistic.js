@@ -11,6 +11,6 @@ const Statistic = mongoose.model("Statistic", {
   jeu_total: Number,
   nbPartie: Number,
   univers_ip: Array,
-  univers_ip: Number,
+  univers_total: Number,
 });
 module.exports = Statistic;

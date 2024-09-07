@@ -8,60 +8,62 @@ router.post("/ROMAN/ip", async (req, res) => {
     let ipAlreadyExists = false;
     const adresses = await Statistic.findOne({ status: "encours" });
     if (req.body.page === "home") {
-      if (adresses.home_ip) {
+      let home_ip = [];
+      let home_total = 0;
+      if (adresses.home_total) {
+        home_ip = adresses.home_ip;
+        home_total = adresses.home_total;
         ipAlreadyExists = adresses.home_ip.includes(req.body.ip);
-      } else {
-        adresses.home_ip = [];
       }
-
       if (!ipAlreadyExists) {
-        adresses.home_ip.push(req.body.ip);
-        adresses.home_total = (adresses.home_total || 0) + 1;
+        home_ip.push(req.body.ip);
+        home_total++;
       }
-
       await Statistic.findByIdAndUpdate(
         adresses._id,
         {
-          home_ip: adresses.home_ip,
-          home_total: adresses.home_total,
+          home_ip,
+          home_total,
         },
         { new: true }
       );
     } else if (req.body.page === "jeu") {
-      if (adresses.jeu) {
+      let jeu_ip = [];
+      let jeu_total = 0;
+      if (adresses.jeu_total) {
+        jeu_ip = adresses.jeu_ip;
+        jeu_total = adresses.jeu_total;
         ipAlreadyExists = adresses.jeu_ip.includes(req.body.ip);
-      } else {
-        adresses.jeu_ip = [];
       }
       if (!ipAlreadyExists) {
-        adresses.jeu_ip.push(req.body.ip);
-        adresses.jeu_total = (adresses.jeu_total || 0) + 1;
+        jeu_ip.push(req.body.ip);
+        jeu_total++;
       }
-
       await Statistic.findByIdAndUpdate(
         adresses._id,
         {
-          jeu_ip: adresses.jeu_ip,
-          jeu_total: adresses.jeu_total,
+          jeu_ip,
+          jeu_total,
         },
         { new: true }
       );
     } else if (req.body.page === "univers") {
-      if (adresses.univers_ip) {
+      let univers_ip = [];
+      let univers_total = 0;
+      if (adresses.univers_total) {
+        univers_ip = adresses.univers_ip;
+        univers_total = adresses.univers_total;
         ipAlreadyExists = adresses.univers_ip.includes(req.body.ip);
-      } else {
-        adresses.univers_ip = [];
       }
       if (!ipAlreadyExists) {
-        adresses.univers_ip.push(req.body.ip);
-        adresses.univers_total = (adresses.univers_total || 0) + 1;
+        univers_ip.push(req.body.ip);
+        univers_total++;
       }
-
       await Statistic.findByIdAndUpdate(
         adresses._id,
         {
-          univers_ip: adresses.univers_ip,
-          univers_total: adresses.univers_total,
+          univers_ip,
+          univers_total,
         },
         { new: true }
       );
