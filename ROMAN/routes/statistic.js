@@ -75,6 +75,32 @@ router.post("/ROMAN/ip", async (req, res) => {
   }
 });
 
+// Enregistrer l'username quand une partie est jouée
+router.post("/ROMAN/partie", async (req, res) => {
+  try {
+    if (req.body.username) {
+      const today = new Date();
+      const statistiques = await Statistic.findOne({ status: "encours" });
+      const parties = statistiques.parties;
+      parties.push({ pseudo: req.body.username, date: today });
+      await Statistic.findByIdAndUpdate(
+        statistiques._id,
+        {
+          parties,
+        },
+        { new: true }
+      );
+      return res
+        .status(200)
+        .json({ message: "Une nouvelle partie a été lancée." });
+    } else {
+      return res.status(500).json({ message: "Les statistiques sont à jour." });
+    }
+  } catch (error) {
+    return res.status(400).json(error);
+  }
+});
+
 // archiver les statistiques à la fin du mois
 router.post("/ROMAN/archive", async (req, res) => {
   try {
