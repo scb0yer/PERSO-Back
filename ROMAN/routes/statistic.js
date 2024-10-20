@@ -79,7 +79,14 @@ router.post("/ROMAN/ip", async (req, res) => {
 router.post("/ROMAN/partie", async (req, res) => {
   try {
     if (req.body.username) {
-      const today = new Date();
+      const today = new Date().toLocaleString("fr-FR", {
+        timeZone: "Europe/Paris",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
       const statistiques = await Statistic.findOne({ status: "encours" });
       const parties = statistiques.parties;
       parties.push({ pseudo: req.body.username, date: today });
