@@ -89,7 +89,11 @@ router.post("/ROMAN/partie", async (req, res) => {
       });
       const statistiques = await Statistic.findOne({ status: "encours" });
       const parties = statistiques.parties;
-      parties.push({ pseudo: req.body.username, date: today });
+      parties.push({
+        pseudo: req.body.username,
+        date: today,
+        support: req.body.support,
+      });
       await Statistic.findByIdAndUpdate(
         statistiques._id,
         {
