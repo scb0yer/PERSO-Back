@@ -17,6 +17,12 @@ app.use(romanMailRoutes);
 const romanStatisticsRoutes = require("./ROMAN/routes/statistic");
 app.use(romanStatisticsRoutes);
 
+const romanPaymentRoutes = require("./ROMAN/routes/payment");
+app.use(romanPaymentRoutes);
+
+const romanOrderRoutes = require("./ROMAN/routes/payment");
+app.use(romanOrderRoutes);
+
 app.all("*", (req, res) => {
   return res.status(404).json("Not found");
 });

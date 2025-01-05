@@ -25,7 +25,7 @@ router.post("/sendEmail", async (req, res) => {
     );
     return res.status(200).json(response);
   } catch (error) {
-    res.status(400).json(error);
+    res.status(400).json({ message: error.message });
   }
   res.status(200).json({ message: "infos bien reçues" });
 });

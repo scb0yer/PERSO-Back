@@ -10,7 +10,8 @@
     "install": "^0.13.0",
     "mailgun.js": "^10.2.3",
     "mongoose": "^8.2.0",
-    "nodemon": "^3.0.3"
+    "nodemon": "^3.0.3",
+    "stripe": "^17.5.0"
   },
   "keywords": [],
   "author": "",
