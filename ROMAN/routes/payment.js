@@ -5,7 +5,7 @@ const Order = require("../models/Order");
 
 const stripe = createStripe(process.env.STRIPE_API_SECRET);
 
-router.post("/payment", async (req, res) => {
+router.post("/ROMAN/payment", async (req, res) => {
   console.log(req.body);
   if (
     req.body.email &&
@@ -14,6 +14,14 @@ router.post("/payment", async (req, res) => {
     req.body.stripeToken
   )
     try {
+      const today = new Date().toLocaleString("fr-FR", {
+        timeZone: "Europe/Paris",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
       const newOrder = new Order({
         ref: req.body.orderRef,
         date: today,
@@ -31,14 +39,7 @@ router.post("/payment", async (req, res) => {
         description: `Paiement de votre commande : ${req.body.orderRef}`,
         source: req.body.stripeToken,
       });
-      const today = new Date().toLocaleString("fr-FR", {
-        timeZone: "Europe/Paris",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+
       await Order.findOneAndUpdate(
         { orderRef: req.body.orderRef },
         {
