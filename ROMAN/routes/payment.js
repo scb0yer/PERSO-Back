@@ -39,14 +39,18 @@ router.post("/ROMAN/payment", async (req, res) => {
         description: `Paiement de votre commande : ${req.body.orderRef}`,
         source: req.body.stripeToken,
       });
-      await Order.findOneAndUpdate(
-        { ref: req.body.orderRef },
-        {
-          status: "payée",
-        },
-        { new: true }
-      );
-      return res.status(200).json({ status });
+      if (status === "succeeded") {
+        await Order.findOneAndUpdate(
+          { ref: req.body.orderRef },
+          {
+            status: "payée",
+          },
+          { new: true }
+        );
+        return res.status(200).json({ status });
+      } else {
+        res.status(500).json({ message: error.message });
+      }
     } catch (error) {
       console.log(error.message);
       res.status(500).json({ message: error.message });
