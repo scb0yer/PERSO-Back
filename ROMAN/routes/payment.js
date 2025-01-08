@@ -39,14 +39,15 @@ router.post("/ROMAN/payment", async (req, res) => {
         description: `Paiement de votre commande : ${req.body.orderRef}`,
         source: req.body.stripeToken,
       });
-
-      await Order.findOneAndUpdate(
-        { orderRef: req.body.orderRef },
-        {
-          status: "payée",
-        },
-        { new: true }
-      );
+      if (status)
+        await Order.findOneAndUpdate(
+          { ref: req.body.orderRef },
+          {
+            status: "payée",
+          },
+          { new: true }
+        );
+      return res.status(200).json({ status });
       return res.status(200).json({
         message:
           "Votre commande a bien été enregistrée. Vous recevrez bientôt un email de Mondial Relay pour choisir votre point relais.",
