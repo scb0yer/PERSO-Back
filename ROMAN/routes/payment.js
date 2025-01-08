@@ -8,7 +8,6 @@ const stripe = createStripe(process.env.STRIPE_API_SECRET);
 router.post("/payment", async (req, res) => {
   console.log(req.body);
   if (
-    req.body.payed &&
     req.body.email &&
     req.body.orderRef &&
     req.body.amount &&
