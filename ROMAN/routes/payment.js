@@ -39,19 +39,14 @@ router.post("/ROMAN/payment", async (req, res) => {
         description: `Paiement de votre commande : ${req.body.orderRef}`,
         source: req.body.stripeToken,
       });
-      if (status)
-        await Order.findOneAndUpdate(
-          { ref: req.body.orderRef },
-          {
-            status: "payée",
-          },
-          { new: true }
-        );
+      await Order.findOneAndUpdate(
+        { ref: req.body.orderRef },
+        {
+          status: "payée",
+        },
+        { new: true }
+      );
       return res.status(200).json({ status });
-      return res.status(200).json({
-        message:
-          "Votre commande a bien été enregistrée. Vous recevrez bientôt un email de Mondial Relay pour choisir votre point relais.",
-      });
     } catch (error) {
       console.log(error.message);
       res.status(500).json({ message: error.message });
