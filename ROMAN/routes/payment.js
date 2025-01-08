@@ -14,6 +14,18 @@ router.post("/ROMAN/payment", async (req, res) => {
     req.body.stripeToken
   )
     try {
+      let orderRef = req.body.orderRef;
+      const refAlreadyExist = await Order.findOne({ ref: req.body.orderRef });
+      if (refAlreadyExist) {
+        const orders = await Order.find();
+        let month = new Date().getUTCMonth() + 1;
+        if (month < 10) {
+          month = `0${month}`;
+        }
+        const year = new Date().getUTCFullYear().toString().slice(-2);
+        orderRef = `LDH${year}${month}${orders.length + 1}ST`;
+      }
+
       const today = new Date().toLocaleString("fr-FR", {
         timeZone: "Europe/Paris",
         year: "numeric",
@@ -23,7 +35,7 @@ router.post("/ROMAN/payment", async (req, res) => {
         minute: "2-digit",
       });
       const newOrder = new Order({
-        ref: req.body.orderRef,
+        ref: orderRef,
         date: today,
         name: req.body.name,
         email: req.body.email,
