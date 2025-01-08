@@ -20,7 +20,7 @@ app.use(romanStatisticsRoutes);
 const romanPaymentRoutes = require("./ROMAN/routes/payment");
 app.use(romanPaymentRoutes);
 
-const romanOrderRoutes = require("./ROMAN/routes/payment");
+const romanOrderRoutes = require("./ROMAN/routes/order");
 app.use(romanOrderRoutes);
 
 app.all("*", (req, res) => {
