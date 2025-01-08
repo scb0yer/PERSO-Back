@@ -5,7 +5,7 @@ const router = express.Router();
 // Enregistrer l'username quand une partie est jouée
 router.post("/ROMAN/order", async (req, res) => {
   try {
-    if (req.body.payed && req.body.email && req.body.details) {
+    if (req.body.payed && req.body.email && req.body.details && req.body.ref) {
       const today = new Date().toLocaleString("fr-FR", {
         timeZone: "Europe/Paris",
         year: "numeric",
@@ -14,9 +14,8 @@ router.post("/ROMAN/order", async (req, res) => {
         hour: "2-digit",
         minute: "2-digit",
       });
-      const orders = await Order.find();
       const newOrder = new Order({
-        ref: `STRIPE${orders.length + 1}`,
+        ref: req.body.ref,
         date: today,
         name: req.body.name,
         email: req.body.email,
@@ -31,6 +30,18 @@ router.post("/ROMAN/order", async (req, res) => {
           "Votre commande a bien été enregistrée. Vous recevrez bientôt un email de Mondial Relay pour choisir votre point relais.",
       });
     }
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+});
+
+router.get("/ROMAN/orderRef", async (req, res) => {
+  try {
+    const orders = await Order.find();
+    const ref = `STRIPE-${orders.length + 1}`;
+    return res.status(200).json({
+      ref,
+    });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
