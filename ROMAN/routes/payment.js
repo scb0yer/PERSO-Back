@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const createStripe = require("stripe");
 const Order = require("../models/Order");
+const Newsletter = require("../models/Newsletter");
 const formData = require("form-data");
 const Mailgun = require("mailgun.js");
 const mailgun = new Mailgun(formData);
@@ -107,6 +108,17 @@ router.post("/ROMAN/payment", async (req, res) => {
           process.env.DOMAIN_MAILGUN,
           messageData
         );
+        const emailIsFound = await Newsletter.findOne({
+          email: req.body.email,
+        });
+        if (!emailIsFound) {
+          const newNewsletter = new Newsletter({
+            name: req.body.name,
+            date: today,
+            email: req.body.email,
+          });
+          await newNewsletter.save();
+        }
         return res.status(200).json({ status });
       } else {
         await Order.findOneAndUpdate(
