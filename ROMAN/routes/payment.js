@@ -19,7 +19,8 @@ router.post("/ROMAN/payment", async (req, res) => {
     req.body.email &&
     req.body.orderRef &&
     req.body.amount &&
-    req.body.stripeToken
+    req.body.stripeToken &&
+    req.body.details
   )
     try {
       let orderRef = req.body.orderRef;
@@ -59,7 +60,9 @@ router.post("/ROMAN/payment", async (req, res) => {
         description: `Paiement de votre commande : ${req.body.orderRef}`,
         source: req.body.stripeToken,
       });
+
       if (status === "succeeded") {
+        console.log("details", req.body.details);
         await Order.findOneAndUpdate(
           { ref: req.body.orderRef },
           {
@@ -88,7 +91,7 @@ router.post("/ROMAN/payment", async (req, res) => {
   <div>Statut : Payée</div>
 `;
         const messageData = {
-          from: `LE DERNIER HÉRITIER`,
+          from: `LE DERNIER HÉRITIER<${process.env.MY_EMAIL_WRITING}>`,
           to: process.env.MY_EMAIL_WRITING,
           subject: `Nouvelle commande à envoyer`,
           text: formattedHtml,
