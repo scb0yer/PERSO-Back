@@ -96,6 +96,13 @@ router.post("/ROMAN/payment", async (req, res) => {
         );
         return res.status(200).json({ status });
       } else {
+        await Order.findOneAndUpdate(
+          { ref: req.body.orderRef },
+          {
+            status: "annulée",
+          },
+          { new: true }
+        );
         res.status(500).json({ message: error.message });
       }
     } catch (error) {
