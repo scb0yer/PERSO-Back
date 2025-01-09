@@ -72,7 +72,7 @@ router.post("/ROMAN/payment", async (req, res) => {
   <div>adresse email : ${req.body.email}</div>
   <div>Date de la commande : ${today}</div>
   <ul>
-    ${productsToBuy
+    ${req.body.details
       .map(
         (product) => `
       <li><strong>${product.title}</strong> - Quantité: ${product.quantity}, Prix total: ${product.amount} €</li>
@@ -80,7 +80,10 @@ router.post("/ROMAN/payment", async (req, res) => {
       )
       .join("")}
   </ul>
-  ${req.body.dedication && `<div>Nom à dédicacer : ${nameToDedicate}</div>`}
+  ${
+    req.body.dedication &&
+    `<div>Nom à dédicacer : ${req.body.nameToDedicate}</div>`
+  }
   <div>Montant total (avec frais de livraison) : ${req.body.amount} €</div>
   <div>Statut : Payée</div>
 `;
