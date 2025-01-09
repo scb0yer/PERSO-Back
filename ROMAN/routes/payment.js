@@ -16,67 +16,74 @@ const stripe = createStripe(process.env.STRIPE_API_SECRET);
 
 router.post("/ROMAN/payment", async (req, res) => {
   console.log(req.body);
-  if (
-    req.body.email &&
-    req.body.orderRef &&
-    req.body.amount &&
-    req.body.stripeToken &&
-    req.body.details
-  )
-    try {
-      let orderRef = req.body.orderRef;
-      const refAlreadyExist = await Order.findOne({ ref: req.body.orderRef });
-      if (refAlreadyExist) {
-        const orders = await Order.find();
-        let month = new Date().getUTCMonth() + 1;
-        if (month < 10) {
-          month = `0${month}`;
-        }
-        const year = new Date().getUTCFullYear().toString().slice(-2);
-        orderRef = `LDH${year}${month}${orders.length + 1}ST`;
+
+  try {
+    if (
+      !req.body.email ||
+      !req.body.orderRef ||
+      !req.body.amount ||
+      !req.body.stripeToken ||
+      !req.body.details
+    ) {
+      res
+        .status(400)
+        .json({ message: "Il manque des informations obligatoires." });
+    }
+
+    let orderRef = req.body.orderRef;
+    const refAlreadyExist = await Order.findOne({ ref: req.body.orderRef });
+    if (refAlreadyExist) {
+      const orders = await Order.find();
+      let month = new Date().getUTCMonth() + 1;
+      if (month < 10) {
+        month = `0${month}`;
       }
+      const year = new Date().getUTCFullYear().toString().slice(-2);
+      orderRef = `LDH${year}${month}${orders.length + 1}ST`;
+    }
 
-      const today = new Date().toLocaleString("fr-FR", {
-        timeZone: "Europe/Paris",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      const newOrder = new Order({
-        ref: orderRef,
-        date: today,
-        name: req.body.name,
-        email: req.body.email,
-        dedication: req.body.dedication,
-        nameToDedicate: req.body.nameToDedicate,
-        status: "commandée",
-        details: req.body.details,
-      });
-      await newOrder.save();
-      let { status } = await stripe.charges.create({
-        amount: (req.body.amount * 100).toFixed(0),
-        currency: "eur",
-        description: `Paiement de votre commande : ${req.body.orderRef}`,
-        source: req.body.stripeToken,
-      });
+    const today = new Date().toLocaleString("fr-FR", {
+      timeZone: "Europe/Paris",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const newOrder = new Order({
+      ref: orderRef,
+      date: today,
+      name: req.body.name,
+      email: req.body.email,
+      dedication: req.body.dedication,
+      nameToDedicate: req.body.nameToDedicate,
+      status: "commandée",
+      details: req.body.details,
+    });
+    await newOrder.save();
+    let { status } = await stripe.charges.create({
+      amount: (req.body.amount * 100).toFixed(0),
+      currency: "eur",
+      description: `Paiement de votre commande : ${req.body.orderRef}`,
+      source: req.body.stripeToken,
+    });
 
-      if (status === "succeeded") {
-        console.log("details", req.body.details);
-        await Order.findOneAndUpdate(
-          { ref: req.body.orderRef },
-          {
-            status: "payée",
-          },
-          { new: true }
-        );
-        const formattedHtml = `
+    if (status === "succeeded") {
+      console.log("succeeded !");
+      console.log("details", req.body.details);
+      await Order.findOneAndUpdate(
+        { ref: req.body.orderRef },
+        {
+          status: "payée",
+        },
+        { new: true }
+      );
+      const formattedHtml = `
 
 Commande de ${req.body.name} n°${orderRef} :
 
-adresse email : ${req.body.email}
-Date de la commande : ${today}
+• adresse email : ${req.body.email}
+• Date de la commande : ${today}
 
 ${req.body.details
   .map(
@@ -93,42 +100,43 @@ Montant total (avec frais de livraison) : ${req.body.amount} €
 Statut : ✅ Payée
 
 `;
-        const messageData = {
-          from: `LE DERNIER HÉRITIER`,
-          to: process.env.MY_EMAIL_WRITING,
-          subject: `Nouvelle commande à envoyer`,
-          text: formattedHtml,
-        };
-        const response = await client.messages.create(
-          process.env.DOMAIN_MAILGUN,
-          messageData
-        );
-        const emailIsFound = await Newsletter.findOne({
+      const messageData = {
+        from: `LE DERNIER HÉRITIER`,
+        to: process.env.MY_EMAIL_WRITING,
+        subject: `Nouvelle commande à envoyer`,
+        text: formattedHtml,
+      };
+      const response = await client.messages.create(
+        process.env.DOMAIN_MAILGUN,
+        messageData
+      );
+      const emailIsFound = await Newsletter.findOne({
+        email: req.body.email,
+      });
+      if (!emailIsFound) {
+        const newNewsletter = new Newsletter({
+          name: req.body.name,
+          date: today,
           email: req.body.email,
         });
-        if (!emailIsFound) {
-          const newNewsletter = new Newsletter({
-            name: req.body.name,
-            date: today,
-            email: req.body.email,
-          });
-          await newNewsletter.save();
-        }
-        return res.status(200).json({ status });
-      } else {
-        await Order.findOneAndUpdate(
-          { ref: req.body.orderRef },
-          {
-            status: "annulée",
-          },
-          { new: true }
-        );
-        res.status(500).json({ message: error.message });
+        await newNewsletter.save();
       }
-    } catch (error) {
-      console.log(error.message);
+      return res.status(200).json({ status });
+    } else {
+      console.log("not succeeded");
+      await Order.findOneAndUpdate(
+        { ref: req.body.orderRef },
+        {
+          status: "annulée",
+        },
+        { new: true }
+      );
       res.status(500).json({ message: error.message });
     }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: error.message });
+  }
 });
 
 module.exports = router;
