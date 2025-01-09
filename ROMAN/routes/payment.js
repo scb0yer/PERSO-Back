@@ -67,12 +67,9 @@ router.post("/ROMAN/payment", async (req, res) => {
       description: `Paiement de votre commande : ${req.body.orderRef}`,
       source: req.body.stripeToken,
     });
-
     if (status === "succeeded") {
-      console.log("succeeded !");
-      console.log("details", req.body.details);
       await Order.findOneAndUpdate(
-        { ref: req.body.orderRef },
+        { ref: orderRef },
         {
           status: "payée",
         },
@@ -101,7 +98,7 @@ Statut : ✅ Payée
 
 `;
       const messageData = {
-        from: `LE DERNIER HÉRITIER`,
+        from: `LE DERNIER HÉRITIER <scboyer.writting@gmail.com>`,
         to: process.env.MY_EMAIL_WRITING,
         subject: `Nouvelle commande à envoyer`,
         text: formattedHtml,
@@ -123,7 +120,6 @@ Statut : ✅ Payée
       }
       return res.status(200).json({ status });
     } else {
-      console.log("not succeeded");
       await Order.findOneAndUpdate(
         { ref: req.body.orderRef },
         {
