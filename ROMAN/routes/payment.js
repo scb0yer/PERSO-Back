@@ -72,31 +72,26 @@ router.post("/ROMAN/payment", async (req, res) => {
           { new: true }
         );
         const formattedHtml = `
-  ${(
-    <h2>
-      Commande de ${req.body.name} n°${orderRef} :
-    </h2>
-  )}
-  ${(<div>adresse email : ${req.body.email}</div>)}
- ${(<div>Date de la commande : ${today}</div>)}
-  ${(
-    <ul>
-      $
-      {req.body.details
-        .map(
-          (product) => `
-      <li><strong>${product.title}</strong> - Quantité: ${product.quantity}, Prix total: ${product.amount} €</li>
+
+Commande de ${req.body.name} n°${orderRef} :
+
+adresse email : ${req.body.email}
+Date de la commande : ${today}
+
+${req.body.details
+  .map(
+    (product) => `
+      
+          → ${product.title} - Quantité: ${product.quantity}, Prix total: ${product.amount} €
     `
-        )
-        .join("")}
-    </ul>
-  )}
-  ${
-    req.body.dedication &&
-    `${(<div>Nom à dédicacer : ${req.body.nameToDedicate}</div>)}`
-  }
-  ${(<div>Montant total (avec frais de livraison) : ${req.body.amount} €</div>)}
-  ${(<div>Statut : Payée</div>)}
+  )
+  .join("")}
+
+${req.body.dedication && `✍️ Nom à dédicacer : ${req.body.nameToDedicate}`}
+
+Montant total (avec frais de livraison) : ${req.body.amount} €
+Statut : ✅ Payée
+
 `;
         const messageData = {
           from: `LE DERNIER HÉRITIER`,
