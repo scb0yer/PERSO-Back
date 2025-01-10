@@ -73,6 +73,7 @@ router.post("/ROMAN/payment", async (req, res) => {
     let customer = await stripe.customers.create({
       email: req.body.email,
       name: req.body.name,
+      source: req.body.stripeToken,
     });
     let invoice = await stripe.invoices.create({
       customer: customer.id,
@@ -88,7 +89,14 @@ router.post("/ROMAN/payment", async (req, res) => {
       currency: "eur",
       description: `Paiement de la commande ${req.body.orderRef}`,
       metadata: {
-        items: JSON.stringify(req.body.details), // Détails des items dans les métadonnées
+        items: req.body.details
+          .map(
+            (product) => `
+            
+                ${product.title} ( Quantité: ${product.quantity})
+          `
+          )
+          .join(","), // Détails des items dans les métadonnées
       },
     });
     // Finaliser et envoyer la facture
