@@ -67,7 +67,7 @@ router.post("/ROMAN/payment", async (req, res) => {
       currency: "eur",
       description: `Paiement de votre commande : ${req.body.orderRef}`,
       source: req.body.stripeToken,
-      email: req.body.email,
+      receipt_email: req.body.email,
     });
 
     if (status === "succeeded") {
