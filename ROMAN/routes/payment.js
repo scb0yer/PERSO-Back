@@ -61,12 +61,38 @@ router.post("/ROMAN/payment", async (req, res) => {
       details: req.body.details,
     });
     await newOrder.save();
-    let { status } = await stripe.charges.create({
+
+    // let { status } = await stripe.charges.create({
+    //   amount: (req.body.amount * 100).toFixed(0),
+    //   currency: "eur",
+    //   description: `Paiement de votre commande : ${req.body.orderRef}`,
+    //   source: req.body.stripeToken,
+    // });
+
+    // création et envoi de la facture
+    let customer = await stripe.customers.create({
+      email: req.body.email,
+      name: req.body.name,
+    });
+    let invoice = await stripe.invoices.create({
+      customer: customer.id,
+      auto_advance: true,
+      collection_method: "charge_automatically", // Prélèvement automatique
+      metadata: {
+        orderRef: req.body.orderRef,
+      },
+    });
+    await stripe.invoiceItems.create({
+      customer: customer.id,
       amount: (req.body.amount * 100).toFixed(0),
       currency: "eur",
-      description: `Paiement de votre commande : ${req.body.orderRef}`,
-      source: req.body.stripeToken,
+      description: `Paiement de la commande ${req.body.orderRef}`,
+      metadata: {
+        items: JSON.stringify(req.body.details), // Détails des items dans les métadonnées
+      },
     });
+    // Finaliser et envoyer la facture
+    let { status } = await stripe.invoices.finalizeInvoice(invoice.id);
     if (status === "succeeded") {
       await Order.findOneAndUpdate(
         { ref: orderRef },
