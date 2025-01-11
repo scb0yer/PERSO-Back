@@ -18,7 +18,7 @@ router.post("/ROMAN/promoCheck", async (req, res) => {
   try {
     let response = "";
     if (req.body.amount >= 40 && req.body.promo === process.env.PROMO) {
-      response = 0.9;
+      response = 0.1;
     } else {
       response = false;
     }
