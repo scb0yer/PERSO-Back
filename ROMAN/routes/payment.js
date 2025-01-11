@@ -14,6 +14,22 @@ const client = mailgun.client({
 
 const stripe = createStripe(process.env.STRIPE_API_SECRET);
 
+router.post("/ROMAN/promoCheck", async (req, res) => {
+  try {
+    let response = "";
+    if (req.body.amount >= 40 && req.body.promo === process.env.PROMO) {
+      response = 0.9;
+    } else {
+      response = false;
+    }
+    return res.status(200).json({
+      response,
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+});
+
 router.post("/ROMAN/payment", async (req, res) => {
   console.log(req.body);
 
