@@ -81,7 +81,7 @@ router.post("/ROMAN/payment", async (req, res) => {
     let { status } = await stripe.charges.create({
       amount: (req.body.amount * 100).toFixed(0),
       currency: "eur",
-      description: `Paiement de votre commande : ${req.body.orderRef}`,
+      description: `Paiement de votre commande : ${orderRef}`,
       source: req.body.stripeToken,
       receipt_email: req.body.email,
     });
@@ -140,7 +140,7 @@ Statut : ✅ Payée
       return res.status(200).json({ status });
     } else {
       await Order.findOneAndUpdate(
-        { ref: req.body.orderRef },
+        { ref: orderRef },
         {
           status: "annulée",
         },
