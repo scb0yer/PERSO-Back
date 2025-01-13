@@ -6,6 +6,7 @@ const Newsletter = require("../models/Newsletter");
 const formData = require("form-data");
 const Mailgun = require("mailgun.js");
 const mailgun = new Mailgun(formData);
+const { DateTime } = require("luxon");
 
 const client = mailgun.client({
   username: "Sophie Boyer",
@@ -58,14 +59,7 @@ router.post("/ROMAN/payment", async (req, res) => {
       orderRef = `LDH${year}${month}${orders.length + 1}ST`;
     }
 
-    const today = new Date().toLocaleString("fr-FR", {
-      timeZone: "Europe/Paris",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const today = DateTime.now().setZone("Europe/Paris").toISO();
     const newOrder = new Order({
       ref: orderRef,
       date: today,
