@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Character = mongoose.model("Character", {
   name: String,
   img: String,
+  imgStatic: String,
   description: String,
   age: Number,
   gift: String,
