@@ -29,8 +29,17 @@ router.post("/ROMAN/character", async (req, res) => {
 // Récupérer les personnages
 router.get("/ROMAN/characters", async (req, res) => {
   try {
-    const characters = new Character.find();
+    const characters = await Character.find().sort({ name: 1 });
     return res.status(200).json(characters);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+});
+
+router.get("/ROMAN/charactersName", async (req, res) => {
+  try {
+    const names = await Character.find().sort({ name: 1 }).select("name -_id"); // on ne garde que "name", on exclut "_id"
+    return res.status(200).json(names);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
