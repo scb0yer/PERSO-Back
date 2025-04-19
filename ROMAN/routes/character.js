@@ -38,7 +38,7 @@ router.get("/ROMAN/characters", async (req, res) => {
 
 router.get("/ROMAN/charactersName", async (req, res) => {
   try {
-    const names = await Character.find().sort({ name: 1 }).select("name -_id"); // on ne garde que "name", on exclut "_id"
+    const names = await Character.find().sort({ name: 1 }).select("name");
     return res.status(200).json(names);
   } catch (error) {
     return res.status(400).json({ message: error.message });
