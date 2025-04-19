@@ -45,4 +45,13 @@ router.get("/ROMAN/charactersName", async (req, res) => {
   }
 });
 
+router.get("/ROMAN/character/:id", async (req, res) => {
+  try {
+    const character = await Character.findById(req.params.id);
+    return res.status(200).json({ character });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
