@@ -26,6 +26,9 @@ app.use(romanOrderRoutes);
 const romanCharacterRoutes = require("./ROMAN/routes/character");
 app.use(romanCharacterRoutes);
 
+const romanNewsletterRoutes = require("./ROMAN/routes/newsletter");
+app.use(romanNewsletterRoutes);
+
 app.all("*", (req, res) => {
   return res.status(404).json("Not found");
 });
