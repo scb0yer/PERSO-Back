@@ -6,14 +6,7 @@ const router = express.Router();
 router.post("/ROMAN/newsletter", async (req, res) => {
   try {
     if (req.body.email) {
-      const today = new Date().toLocaleString("fr-FR", {
-        timeZone: "Europe/Paris",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      const today = DateTime.now().setZone("Europe/Paris").toISO();
       const emailIsFound = await Newsletter.findOne({ email: req.body.email });
       if (emailIsFound) {
         return res.status(500).json({

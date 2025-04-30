@@ -123,7 +123,7 @@ Statut : ✅ Payée
       const emailIsFound = await Newsletter.findOne({
         email: req.body.email,
       });
-      if (!emailIsFound) {
+      if (!emailIsFound && req.body.newsletter) {
         const newNewsletter = new Newsletter({
           name: req.body.name,
           date: today,
