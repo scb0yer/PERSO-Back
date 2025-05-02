@@ -16,6 +16,8 @@ router.post("/ROMAN/character", async (req, res) => {
       siblings: req.body.siblings,
       chapters: req.body.chapters,
       quote: req.body.quote,
+      imgStatic: req.body.imgStatic,
+      pronunciation: req.body.pronunciation,
     });
     await newCharacter.save();
     return res.status(200).json({

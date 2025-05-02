@@ -12,5 +12,6 @@ const Character = mongoose.model("Character", {
   siblings: Array,
   chapters: Array,
   quote: String,
+  pronunciation: String,
 });
 module.exports = Character;
