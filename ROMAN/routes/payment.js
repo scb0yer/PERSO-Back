@@ -40,7 +40,8 @@ router.post("/ROMAN/payment", async (req, res) => {
       !req.body.orderRef ||
       !req.body.amount ||
       !req.body.stripeToken ||
-      !req.body.details
+      !req.body.details ||
+      !req.body.country
     ) {
       res
         .status(400)
@@ -69,6 +70,7 @@ router.post("/ROMAN/payment", async (req, res) => {
       nameToDedicate: req.body.nameToDedicate,
       status: "commandée",
       details: req.body.details,
+      country: req.body.country,
     });
     await newOrder.save();
 
@@ -108,6 +110,7 @@ ${req.body.dedication && `✍️ Nom à dédicacer : ${req.body.nameToDedicate}`
 
 Montant total (avec frais de livraison) : ${req.body.amount} €
 Statut : ✅ Payée
+✈️ Pays d'envoi : ${req.body.country}
 
 `;
       const messageData = {
