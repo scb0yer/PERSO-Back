@@ -137,7 +137,7 @@ router.post("/ROMAN/partie", async (req, res) => {
 // archiver les statistiques à la fin du mois
 router.post("/ROMAN/archive", async (req, res) => {
   try {
-    if (req.body.name && req.body.token && req.body.key === process.env.TOKEN) {
+    if (req.body.name && req.body.key && req.body.key === process.env.TOKEN) {
       const encours = await Statistic.findOne({ status: "encours" });
       let orderRef = `LDH${encours.name.slice(-2)}`;
       if (encours.name.slice(0, 4) === "Janv") {
@@ -203,7 +203,7 @@ router.post("/ROMAN/archive", async (req, res) => {
         .status(200)
         .json({ message: "Le mois précédent a bien été archivé" });
     } else {
-      return res.status(500).json({ message: "Les statistiques sont à jour" });
+      return res.status(401).json({ message: "Accès refusé" });
     }
   } catch (error) {
     return res.status(400).json(error);
