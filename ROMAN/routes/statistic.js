@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Statistic = require("../models/Statistic");
+const Newsletter = require("../models/Newsletter");
+const Order = require("../models/Order");
 
 // vérifier si l'IP existe, sinon l'enregistrer et ajouter la visite.
 router.post("/ROMAN/ip", async (req, res) => {
@@ -168,9 +170,13 @@ router.post("/ROMAN/loginAdmin", async (req, res) => {
       req.body.password === process.env.MDP_ADMIN
     ) {
       const statistics = await Statistic.find();
+      const newsletter = await Newsletter.find();
+      const orders = await Order.find();
       return res.status(200).json({
         statistics,
         token: process.env.TOKEN,
+        newsletter: newsletter.length,
+        orders,
       });
     }
   } catch (error) {
