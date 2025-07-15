@@ -67,6 +67,26 @@ router.post("/ROMAN/ip", async (req, res) => {
         },
         { new: true }
       );
+    } else if (req.body.page === "boutique") {
+      let boutique_ip = [];
+      let boutique_total = 0;
+      if (adresses.boutique_total) {
+        boutique_ip = adresses.boutique_ip;
+        boutique_total = adresses.boutique_total;
+        ipAlreadyExists = adresses.boutique_ip.includes(req.body.ip);
+      }
+      if (!ipAlreadyExists) {
+        boutique_ip.push(req.body.ip);
+        boutique_total++;
+      }
+      await Statistic.findByIdAndUpdate(
+        boutique_ip._id,
+        {
+          boutique_ip,
+          boutique_total,
+        },
+        { new: true }
+      );
     }
 
     return res.status(200).json({ message: "Les statistiques sont à jour" });
@@ -134,6 +154,17 @@ router.post("/ROMAN/archive", async (req, res) => {
     }
   } catch (error) {
     return res.status(400).json(error);
+  }
+});
+
+router.get("/ROMAN/getStatistics", async (req, res) => {
+  try {
+    const statistics = await Statistic.find();
+    return res.status(200).json({
+      statistics,
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
   }
 });
 
