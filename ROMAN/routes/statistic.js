@@ -180,16 +180,16 @@ router.post("/ROMAN/archive", async (req, res) => {
       if (encours.name.slice(0, 1) === "D") {
         orderRef += "12";
       }
-      const orders = await Order.find({
-        ref: { $regex: /^${orderRef}/ },
-      });
-
-      let totalCA = 0;
-      orders.forEach((order) => {
+      const sentOrders = await Order.find({ status: "envoyée" });
+      const matchingOrders = sentOrders.filter((order) =>
+        order.ref.startsWith(orderRef)
+      );
+      let CA = 0;
+      matchingOrders.forEach((order) => {
         order.details.forEach((item) => {
           const quantity = item.quantity;
           const price = parseFloat(item.price); // au cas où le prix est une string
-          totalCA += quantity * price;
+          CA += quantity * price;
         });
       });
 
@@ -258,28 +258,39 @@ router.post("/ROMAN/loginAdmin", async (req, res) => {
       if (encours.name.slice(0, 1) === "D") {
         orderRef += "12";
       }
-      const orders = await Order.find({
-        ref: { $regex: /^${orderRef}/ },
-      });
+      const sentOrders = await Order.find({ status: "envoyée" });
+      const matchingOrders = sentOrders.filter((order) =>
+        order.ref.startsWith(orderRef)
+      );
       let CA = 0;
-      orders.forEach((order) => {
+      matchingOrders.forEach((order) => {
         order.details.forEach((item) => {
           const quantity = item.quantity;
           const price = parseFloat(item.price); // au cas où le prix est une string
           CA += quantity * price;
         });
       });
+      const paidOrders = await Order.find({ status: "payée" });
+      const ordersToSend = paidOrders.filter((order) =>
+        order.ref.startsWith(orderRef)
+      );
       const statistics = await Statistic.find();
       const newsletter = await Newsletter.find();
       return res.status(200).json({
         statistics,
         token: process.env.TOKEN,
         newsletter: newsletter.length,
-        orders,
+        orders: matchingOrders.length,
         CA,
+        ordersToSend,
       });
+    } else {
+      return res
+        .status(400)
+        .json({ message: "mot de passe ou identifiant incorrect" });
     }
   } catch (error) {
+    console.error("ERREUR :", error);
     return res.status(400).json({ message: error.message });
   }
 });
