@@ -135,7 +135,11 @@ router.post("/ROMAN/partie", async (req, res) => {
 // archiver les statistiques à la fin du mois
 router.post("/ROMAN/archive", async (req, res) => {
   try {
-    if (req.body.name) {
+    if (
+      req.body.name &&
+      req.body.token &&
+      req.body.token === process.env.TOKEN
+    ) {
       const adresses = await Statistic.findOneAndUpdate(
         { status: "encours" },
         { status: "archivé" },
@@ -157,12 +161,18 @@ router.post("/ROMAN/archive", async (req, res) => {
   }
 });
 
-router.get("/ROMAN/getStatistics", async (req, res) => {
+router.post("/ROMAN/loginAdmin", async (req, res) => {
   try {
-    const statistics = await Statistic.find();
-    return res.status(200).json({
-      statistics,
-    });
+    if (
+      req.body.username === process.env.USERNAME &&
+      req.body.password === process.env.MDP_ADMIN
+    ) {
+      const statistics = await Statistic.find();
+      return res.status(200).json({
+        statistics,
+        token: process.env.TOKEN,
+      });
+    }
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
