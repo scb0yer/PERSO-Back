@@ -137,11 +137,7 @@ router.post("/ROMAN/partie", async (req, res) => {
 // archiver les statistiques à la fin du mois
 router.post("/ROMAN/archive", async (req, res) => {
   try {
-    if (
-      req.body.name &&
-      req.body.token &&
-      req.body.token === process.env.TOKEN
-    ) {
+    if (req.body.name && req.body.token && req.body.key === process.env.TOKEN) {
       const encours = await Statistic.findOne({ status: "encours" });
       let orderRef = `LDH${encours.name.slice(-2)}`;
       if (encours.name.slice(0, 4) === "Janv") {
