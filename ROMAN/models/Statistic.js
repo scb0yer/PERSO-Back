@@ -15,5 +15,7 @@ const Statistic = mongoose.model("Statistic", {
   boutique_ip: Array,
   boutique_total: Number,
   parties: Array,
+  orders: Number,
+  CA: Number,
 });
 module.exports = Statistic;

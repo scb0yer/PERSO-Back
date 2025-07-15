@@ -142,9 +142,60 @@ router.post("/ROMAN/archive", async (req, res) => {
       req.body.token &&
       req.body.token === process.env.TOKEN
     ) {
+      const encours = await Statistic.findOne({ status: "encours" });
+      let orderRef = `LDH${encours.name.slice(-2)}`;
+      if (encours.name.slice(0, 4) === "Janv") {
+        orderRef += "01";
+      }
+      if (encours.name.slice(0, 1) === "F") {
+        orderRef += "02";
+      }
+      if (encours.name.slice(0, 3) === "Mar") {
+        orderRef += "03";
+      }
+      if (encours.name.slice(0, 2) === "Av") {
+        orderRef += "04";
+      }
+      if (encours.name.slice(0, 3) === "Mai") {
+        orderRef += "05";
+      }
+      if (encours.name.slice(0, 4) === "Juin") {
+        orderRef += "06";
+      }
+      if (encours.name.slice(0, 4) === "Juil") {
+        orderRef += "07";
+      }
+      if (encours.name.slice(0, 2) === "Ao") {
+        orderRef += "08";
+      }
+      if (encours.name.slice(0, 1) === "S") {
+        orderRef += "09";
+      }
+      if (encours.name.slice(0, 1) === "O") {
+        orderRef += "10";
+      }
+      if (encours.name.slice(0, 1) === "N") {
+        orderRef += "11";
+      }
+      if (encours.name.slice(0, 1) === "D") {
+        orderRef += "12";
+      }
+      const orders = await Order.find({
+        ref: { $regex: /^${orderRef}/ },
+      });
+
+      let totalCA = 0;
+      orders.forEach((order) => {
+        order.details.forEach((item) => {
+          const quantity = item.quantity;
+          const price = parseFloat(item.price); // au cas où le prix est une string
+          totalCA += quantity * price;
+        });
+      });
+
       const adresses = await Statistic.findOneAndUpdate(
         { status: "encours" },
-        { status: "archivé" },
+        { status: "archivé", orders: orders.length, CA: totalCA },
         { new: true }
       );
       const newStatistic = new Statistic({
@@ -169,14 +220,63 @@ router.post("/ROMAN/loginAdmin", async (req, res) => {
       req.body.username === process.env.USERNAME &&
       req.body.password === process.env.MDP_ADMIN
     ) {
+      const encours = await Statistic.findOne({ status: "encours" });
+      let orderRef = `LDH${encours.name.slice(-2)}`;
+      if (encours.name.slice(0, 4) === "Janv") {
+        orderRef += "01";
+      }
+      if (encours.name.slice(0, 1) === "F") {
+        orderRef += "02";
+      }
+      if (encours.name.slice(0, 3) === "Mar") {
+        orderRef += "03";
+      }
+      if (encours.name.slice(0, 2) === "Av") {
+        orderRef += "04";
+      }
+      if (encours.name.slice(0, 3) === "Mai") {
+        orderRef += "05";
+      }
+      if (encours.name.slice(0, 4) === "Juin") {
+        orderRef += "06";
+      }
+      if (encours.name.slice(0, 4) === "Juil") {
+        orderRef += "07";
+      }
+      if (encours.name.slice(0, 2) === "Ao") {
+        orderRef += "08";
+      }
+      if (encours.name.slice(0, 1) === "S") {
+        orderRef += "09";
+      }
+      if (encours.name.slice(0, 1) === "O") {
+        orderRef += "10";
+      }
+      if (encours.name.slice(0, 1) === "N") {
+        orderRef += "11";
+      }
+      if (encours.name.slice(0, 1) === "D") {
+        orderRef += "12";
+      }
+      const orders = await Order.find({
+        ref: { $regex: /^${orderRef}/ },
+      });
+      let CA = 0;
+      orders.forEach((order) => {
+        order.details.forEach((item) => {
+          const quantity = item.quantity;
+          const price = parseFloat(item.price); // au cas où le prix est une string
+          CA += quantity * price;
+        });
+      });
       const statistics = await Statistic.find();
       const newsletter = await Newsletter.find();
-      const orders = await Order.find();
       return res.status(200).json({
         statistics,
         token: process.env.TOKEN,
         newsletter: newsletter.length,
         orders,
+        CA,
       });
     }
   } catch (error) {
