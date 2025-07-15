@@ -195,7 +195,7 @@ router.post("/ROMAN/archive", async (req, res) => {
 
       const adresses = await Statistic.findOneAndUpdate(
         { status: "encours" },
-        { status: "archivé", orders: orders.length, CA: totalCA },
+        { status: "archivé", orders: matchingOrders.length, CA: totalCA },
         { new: true }
       );
       const newStatistic = new Statistic({
@@ -286,7 +286,7 @@ router.post("/ROMAN/loginAdmin", async (req, res) => {
       });
     } else {
       return res
-        .status(400)
+        .status(401)
         .json({ message: "mot de passe ou identifiant incorrect" });
     }
   } catch (error) {
