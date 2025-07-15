@@ -191,7 +191,7 @@ router.post("/ROMAN/archive", async (req, res) => {
 
       const adresses = await Statistic.findOneAndUpdate(
         { status: "encours" },
-        { status: "archivé", orders: matchingOrders.length, CA: totalCA },
+        { status: "archivé", orders: matchingOrders.length, CA },
         { new: true }
       );
       const newStatistic = new Statistic({
