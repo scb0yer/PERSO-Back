@@ -206,7 +206,7 @@ router.post("/ROMAN/archive", async (req, res) => {
       return res.status(401).json({ message: "Accès refusé" });
     }
   } catch (error) {
-    return res.status(400).json(error);
+    return res.status(400).json({ message: error.message });
   }
 });
 
