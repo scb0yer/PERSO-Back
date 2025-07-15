@@ -85,3 +85,4 @@ router.post("/ROMAN/newPlayer", async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 });
+module.exports = router;
