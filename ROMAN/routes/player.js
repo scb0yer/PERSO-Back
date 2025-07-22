@@ -34,13 +34,13 @@ router.post("/ROMAN/newPlayer", async (req, res) => {
     const emailIsFound = await Newsletter.findOne({
       email,
     });
-    if (!emailIsFound && req.body.newsletter) {
-      const newNewsletter = new Newsletter({
-        name: req.body.name,
-        date: today,
-        email: req.body.email,
-      });
-      await newNewsletter.save();
+    if (!emailIsFound) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Ce concours est réservé aux personnes inscrites à la newsletter.",
+        });
     }
     // calcul du résultat pour le concours "Pour l'Empereur !"
     let result = 0;
