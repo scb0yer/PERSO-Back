@@ -2,6 +2,7 @@ const express = require("express");
 const Player = require("../models/Player");
 const Newsletter = require("../models/Newsletter");
 const router = express.Router();
+const { DateTime } = require("luxon");
 
 router.get("/ROMAN/checkedPlayers", async (req, res) => {
   try {
@@ -35,12 +36,10 @@ router.post("/ROMAN/newPlayer", async (req, res) => {
       email,
     });
     if (!emailIsFound) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Ce concours est réservé aux personnes inscrites à la newsletter.",
-        });
+      return res.status(400).json({
+        message:
+          "Ce concours est réservé aux personnes inscrites à la newsletter.",
+      });
     }
     // calcul du résultat pour le concours "Pour l'Empereur !"
     let result = 0;
