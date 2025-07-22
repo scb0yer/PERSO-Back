@@ -9,5 +9,7 @@ const Player = mongoose.model("Player", {
   contest: String,
   date: Date,
   status: String,
+  favouriteCharacter: String,
+  hatedCharacter: String,
 });
 module.exports = Player;

@@ -74,6 +74,8 @@ router.post("/ROMAN/newPlayer", async (req, res) => {
       result,
       status: "en attente de validation",
       contest: "Pour l'Empereur !",
+      favouriteCharacter: req.body.favouriteCharacter,
+      hatedCharacter: req.body.hatedCharacter,
     });
     await newPlayer.save();
 
