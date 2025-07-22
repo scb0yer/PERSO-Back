@@ -30,7 +30,7 @@ router.post("/ROMAN/newPlayer", async (req, res) => {
     if (playerIsFound) {
       return res
         .status(400)
-        .json({ message: "Vous avez déjà participé à ce concours." });
+        .json({ message: "Tu as déjà participé à ce concours." });
     }
     const emailIsFound = await Newsletter.findOne({
       email,
@@ -38,7 +38,7 @@ router.post("/ROMAN/newPlayer", async (req, res) => {
     if (!emailIsFound) {
       return res.status(400).json({
         message:
-          "Ce concours est réservé aux personnes inscrites à la newsletter.",
+          "Ce concours est réservé aux personnes inscrites à la newsletter or cette adresse n'est pas enregistrée.",
       });
     }
     // calcul du résultat pour le concours "Pour l'Empereur !"
@@ -77,8 +77,12 @@ router.post("/ROMAN/newPlayer", async (req, res) => {
     });
     await newPlayer.save();
 
+    let message = `Ta participation a bien été prise en compte ! Ton score est de ${result} sur 5.`;
+    if (result === 5) {
+      message = `Ta participation a bien été prise en compte ! Ton score est de ${result} sur 5. Bravo ! ✨`;
+    }
     return res.status(200).json({
-      message: `Votre participation a bien été prise en compte ! Votre score est de ${result} sur 5.`,
+      message,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
