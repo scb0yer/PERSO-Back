@@ -36,7 +36,9 @@ router.get("/ROMAN/getnewsletter", async (req, res) => {
   // coment
   try {
     const email = await Newsletter.find().sort({ email: 1 }).select("email");
-    return res.status(200).json(email);
+    const response = [];
+    email.map((registered) => response.push(registered.email));
+    return res.status(200).json(response);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
