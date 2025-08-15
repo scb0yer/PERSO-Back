@@ -33,6 +33,7 @@ router.post("/ROMAN/newsletter", async (req, res) => {
 });
 
 router.get("/ROMAN/getnewsletter", async (req, res) => {
+  // coment
   try {
     const email = await Newsletter.find().sort({ email: 1 }).select("email");
     return res.status(200).json(email);
