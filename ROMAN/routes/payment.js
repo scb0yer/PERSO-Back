@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const createStripe = require("stripe");
 const Order = require("../models/Order");
+const Product = require("../models/Product");
 const Newsletter = require("../models/Newsletter");
 const formData = require("form-data");
 const Mailgun = require("mailgun.js");
@@ -207,6 +208,19 @@ router.post("/ROMAN/payment", async (req, res) => {
         email,
       },
     });
+
+    for (let p = 0; p < details.length; p++) {
+      const productToUpdate = await Product.findOne({
+        title: details[p].title,
+      });
+      const newQuantity = productToUpdate.quantity - details[p].quantity;
+      await Product.findOneAndUpdate(
+        { title: details[p].title },
+        { quantity: newQuantity },
+        { new: true }
+      );
+    }
+
     const formattedHtml = `
 
     Commande de ${req.body.name} n°${orderRef} :
@@ -289,6 +303,18 @@ router.post("/ROMAN/payment-confirmation", async (req, res) => {
       { status: "payée" },
       { new: true }
     );
+
+    for (let p = 0; p < details.length; p++) {
+      const productToUpdate = await Product.findOne({
+        title: details[p].title,
+      });
+      const newQuantity = productToUpdate.quantity - details[p].quantity;
+      await Product.findOneAndUpdate(
+        { title: details[p].title },
+        { quantity: newQuantity },
+        { new: true }
+      );
+    }
 
     if (!order) {
       return res.status(404).json({ message: "Commande introuvable" });
