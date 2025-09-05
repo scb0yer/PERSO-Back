@@ -209,18 +209,6 @@ router.post("/ROMAN/payment", async (req, res) => {
       },
     });
 
-    for (let p = 0; p < details.length; p++) {
-      const productToUpdate = await Product.findOne({
-        title: details[p].title,
-      });
-      const newQuantity = productToUpdate.quantity - details[p].quantity;
-      await Product.findOneAndUpdate(
-        { title: details[p].title },
-        { quantity: newQuantity },
-        { new: true }
-      );
-    }
-
     const formattedHtml = `
 
     Commande de ${req.body.name} n°${orderRef} :
@@ -318,6 +306,18 @@ router.post("/ROMAN/payment-confirmation", async (req, res) => {
 
     if (!order) {
       return res.status(404).json({ message: "Commande introuvable" });
+    }
+
+    for (let p = 0; p < details.length; p++) {
+      const productToUpdate = await Product.findOne({
+        title: details[p].title,
+      });
+      const newQuantity = productToUpdate.quantity - details[p].quantity;
+      await Product.findOneAndUpdate(
+        { title: details[p].title },
+        { quantity: newQuantity },
+        { new: true }
+      );
     }
 
     const today = DateTime.now().setZone("Europe/Paris").toISO();
