@@ -19,7 +19,7 @@ const stripe = createStripe(process.env.STRIPE_API_SECRET);
 router.post("/ROMAN/promoCheck", async (req, res) => {
   try {
     let response = "";
-    if (req.body.amount >= 40 && req.body.promo === process.env.PROMO) {
+    if (req.body.amount >= 35 && req.body.promo === process.env.PROMO) {
       response = 0.1;
     } else {
       response = false;
