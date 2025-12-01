@@ -12,5 +12,6 @@ const Order = mongoose.model("Order", {
   email: String,
   country: String,
   details: [{ product: String, quantity: Number, price: String }],
+  support: String,
 });
 module.exports = Order;

@@ -20,7 +20,7 @@ router.post("/ROMAN/promoCheck", async (req, res) => {
   try {
     let response = "";
     if (req.body.amount >= 35 && req.body.promo === process.env.PROMO) {
-      response = 0.1;
+      response = true;
     } else {
       response = false;
     }
@@ -164,6 +164,7 @@ router.post("/ROMAN/payment", async (req, res) => {
       nameToDedicate,
       newsletter,
       country,
+      support,
     } = req.body;
     const today = DateTime.now().setZone("Europe/Paris").toISO();
     if (!email || !orderRef || !amount || !details || !country) {
@@ -194,6 +195,7 @@ router.post("/ROMAN/payment", async (req, res) => {
       status: "en attente de paiement",
       details,
       country,
+      support,
     });
     await newOrder.save();
 
