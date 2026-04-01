@@ -1,6 +1,5 @@
 const express = require("express");
 const Questionnaire = require("../models/Questionnaire");
-const Newsletter = require("../models/Newsletter");
 const router = express.Router();
 const { DateTime } = require("luxon");
 
