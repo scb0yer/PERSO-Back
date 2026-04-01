@@ -2,6 +2,6 @@ const mongoose = require("mongoose");
 
 const Questionnaire = mongoose.model("Questionnaire", {
   date: Date,
-  result: String,
+  result: Array,
 });
 module.exports = Questionnaire;
