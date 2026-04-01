@@ -38,4 +38,15 @@ router.post("/ROMAN/newQuizz", async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 });
+
+router.get("/ROMAN/quizzResults", async (req, res) => {
+  try {
+    const results = await Questionnaire.find().select("result");
+    return res.status(200).json({
+      results,
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+});
 module.exports = router;
