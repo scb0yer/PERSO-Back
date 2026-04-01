@@ -32,6 +32,9 @@ app.use(romanNewsletterRoutes);
 const romanPlayersRoutes = require("./ROMAN/routes/player");
 app.use(romanPlayersRoutes);
 
+const romanQuestionnaireRoutes = require("./ROMAN/routes/questionnaire");
+app.use(romanQuestionnaireRoutes);
+
 app.all("*", (req, res) => {
   return res.status(404).json("Not found");
 });
