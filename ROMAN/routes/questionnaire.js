@@ -19,7 +19,7 @@ router.post("/ROMAN/newQuizz", async (req, res) => {
     if (resultsDetails.length > 2) {
       resultsDetails.push("Aucun");
     } else {
-      for (let r = 0; r < resultsDetails; r++) {
+      for (let r = 0; r < resultsDetails.length; r++) {
         result.push(characters[resultsDetails[r]]);
       }
     }
