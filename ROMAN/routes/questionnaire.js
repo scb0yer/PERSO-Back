@@ -42,8 +42,24 @@ router.post("/ROMAN/newQuizz", async (req, res) => {
 router.get("/ROMAN/quizzResults", async (req, res) => {
   try {
     const results = await Questionnaire.find().select("result");
+    const stats = [
+      { name: "Tashi", result: 0 },
+      { name: "Taegnor", result: 0 },
+      { name: "Chig Rohir", result: 0 },
+      { name: "Jurgen", result: 0 },
+      { name: "Athán", result: 0 },
+    ];
+    const characters = ["Tashi", "Taegnor", "Chig Rohir", "Jurgen", "Athán"];
+    for (let r = 0; r < results.length; r++) {
+      results[r].result.forEach((name) => {
+        const index = characters.indexOf(name);
+        if (index !== -1) {
+          stats[index].result++;
+        }
+      });
+    }
     return res.status(200).json({
-      results,
+      stats,
     });
   } catch (error) {
     return res.status(400).json({ message: error.message });
