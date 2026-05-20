@@ -146,9 +146,9 @@ router.post("/ROMAN/payment", async (req, res) => {
         await newNewsletter.save();
       }
     }
-    return res.status(200).json({ clientSecret: paymentIntent.client_secret });
+    return res.status(200).json("Commande créée avec succès.");
   } catch (error) {
-    console.error("Erreur Stripe backend:", error.message);
+    console.error("Erreur:", error.message);
     return res.status(500).json({ message: error.message });
   }
 });
