@@ -152,6 +152,33 @@ router.post("/ROMAN/promoCheck", async (req, res) => {
 //   }
 // });
 
+router.post("/ROMAN/create-payment-intent", async (req, res) => {
+  try {
+    const { amount, orderRef, country } = req.body;
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100),
+      currency: "eur",
+
+      automatic_payment_methods: {
+        enabled: true,
+      },
+
+      metadata: {
+        orderRef,
+        country,
+      },
+    });
+
+    return res.status(200).json({
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 router.post("/ROMAN/payment", async (req, res) => {
   try {
     const {
