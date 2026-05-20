@@ -32,126 +32,6 @@ router.post("/ROMAN/promoCheck", async (req, res) => {
   }
 });
 
-// router.post("/ROMAN/payment", async (req, res) => {
-//   console.log(req.body);
-
-//   try {
-//     if (
-//       !req.body.email ||
-//       !req.body.orderRef ||
-//       !req.body.amount ||
-//       !req.body.stripeToken ||
-//       !req.body.details ||
-//       !req.body.country
-//     ) {
-//       res
-//         .status(400)
-//         .json({ message: "Il manque des informations obligatoires." });
-//     }
-
-//     let orderRef = req.body.orderRef;
-//     const refAlreadyExist = await Order.findOne({ ref: req.body.orderRef });
-//     if (refAlreadyExist) {
-//       const orders = await Order.find();
-//       let month = new Date().getUTCMonth() + 1;
-//       if (month < 10) {
-//         month = `0${month}`;
-//       }
-//       const year = new Date().getUTCFullYear().toString().slice(-2);
-//       orderRef = `LDH${year}${month}${orders.length + 1}ST`;
-//     }
-
-//     const today = DateTime.now().setZone("Europe/Paris").toISO();
-//     const newOrder = new Order({
-//       ref: orderRef,
-//       date: today,
-//       name: req.body.name,
-//       email: req.body.email,
-//       dedication: req.body.dedication,
-//       nameToDedicate: req.body.nameToDedicate,
-//       status: "commandée",
-//       details: req.body.details,
-//       country: req.body.country,
-//     });
-//     await newOrder.save();
-
-//     let { status } = await stripe.charges.create({
-//       amount: (req.body.amount * 100).toFixed(0),
-//       currency: "eur",
-//       description: `Paiement de votre commande : ${orderRef}`,
-//       source: req.body.stripeToken,
-//       receipt_email: req.body.email,
-//     });
-
-//     if (status === "succeeded") {
-//       await Order.findOneAndUpdate(
-//         { ref: orderRef },
-//         {
-//           status: "payée",
-//         },
-//         { new: true }
-//       );
-//       const formattedHtml = `
-
-// Commande de ${req.body.name} n°${orderRef} :
-
-// • adresse email : ${req.body.email}
-// • Date de la commande : ${today}
-
-// ${req.body.details
-//   .map(
-//     (product) => `
-
-//           → ${product.title} - Quantité: ${product.quantity}, Prix total: ${product.amount} €
-//     `
-//   )
-//   .join("")}
-
-// ${req.body.dedication && `✍️ Nom à dédicacer : ${req.body.nameToDedicate}`}
-
-// Montant total (avec frais de livraison) : ${req.body.amount} €
-// Statut : ✅ Payée
-// ✈️ Pays d'envoi : ${req.body.country}
-
-// `;
-//       const messageData = {
-//         from: `LE DERNIER HÉRITIER <scboyer.writting@gmail.com>`,
-//         to: process.env.MY_EMAIL_WRITING,
-//         subject: `Nouvelle commande à envoyer`,
-//         text: formattedHtml,
-//       };
-//       const response = await client.messages.create(
-//         process.env.DOMAIN_MAILGUN,
-//         messageData
-//       );
-//       const emailIsFound = await Newsletter.findOne({
-//         email: req.body.email,
-//       });
-//       if (!emailIsFound && req.body.newsletter) {
-//         const newNewsletter = new Newsletter({
-//           name: req.body.name,
-//           date: today,
-//           email: req.body.email,
-//         });
-//         await newNewsletter.save();
-//       }
-//       return res.status(200).json({ status });
-//     } else {
-//       await Order.findOneAndUpdate(
-//         { ref: orderRef },
-//         {
-//           status: "annulée",
-//         },
-//         { new: true }
-//       );
-//       res.status(500).json({ message: error.message });
-//     }
-//   } catch (error) {
-//     console.log(error.message);
-//     res.status(500).json({ message: error.message });
-//   }
-// });
-
 router.post("/ROMAN/create-payment-intent", async (req, res) => {
   try {
     const { amount, orderRef, country } = req.body;
@@ -226,51 +106,27 @@ router.post("/ROMAN/payment", async (req, res) => {
     });
     await newOrder.save();
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // en centimes
-      currency: "eur",
-      payment_method_types: ["card"],
-      receipt_email: email,
-      metadata: {
-        orderRef: finalOrderRef,
-        name,
-        email,
-      },
-    });
-
-    const formattedHtml = `
-
-    Commande de ${req.body.name} n°${orderRef} :
-    
-    • adresse email : ${req.body.email}
-    • Date de la commande : ${today}
-    
-    ${req.body.details
-      .map(
-        (product) => `
-          
-              → ${product.title} - Quantité: ${product.quantity}, Prix total: ${product.amount} €
-        `
-      )
-      .join("")}
-    
-    ${req.body.dedication && `✍️ Nom à dédicacer : ${req.body.nameToDedicate}`}
-    
-    Montant total (avec frais de livraison) : ${req.body.amount} €
-    Statut : ⏳ En attente de confirmation
-    ✈️ Pays d'envoi : ${req.body.country}
-    
-    `;
+    // const paymentIntent = await stripe.paymentIntents.create({
+    //   amount: Math.round(amount * 100), // en centimes
+    //   currency: "eur",
+    //   payment_method_types: ["card"],
+    //   receipt_email: email,
+    //   metadata: {
+    //     orderRef: finalOrderRef,
+    //     name,
+    //     email,
+    //   },
+    // });
 
     const messageData = {
       from: `LE DERNIER HÉRITIER <scboyer.writting@gmail.com>`,
       to: process.env.MY_EMAIL_WRITING,
-      subject: `Nouvelle commande reçue`,
-      text: formattedHtml,
+      subject: `Nouvelle tentative de commande`,
+      text: `Tentative de commande`,
     };
     const response = await client.messages.create(
       process.env.DOMAIN_MAILGUN,
-      messageData
+      messageData,
     );
     const emailIsFound = await Newsletter.findOne({
       email: req.body.email,
@@ -318,7 +174,7 @@ router.post("/ROMAN/payment-confirmation", async (req, res) => {
     const order = await Order.findOneAndUpdate(
       { ref: orderRef },
       { status: "payée" },
-      { new: true }
+      { new: true },
     );
 
     for (let p = 0; p < details.length; p++) {
@@ -329,7 +185,7 @@ router.post("/ROMAN/payment-confirmation", async (req, res) => {
       await Product.findOneAndUpdate(
         { title: details[p].title },
         { quantity: newQuantity },
-        { new: true }
+        { new: true },
       );
     }
 
@@ -345,7 +201,7 @@ router.post("/ROMAN/payment-confirmation", async (req, res) => {
       await Product.findOneAndUpdate(
         { title: details[p].title },
         { quantity: newQuantity },
-        { new: true }
+        { new: true },
       );
     }
 
@@ -363,7 +219,7 @@ ${details
     (product) => `
       
           → ${product.title} - Quantité: ${product.quantity}, Prix total: ${product.amount} €
-    `
+    `,
   )
   .join("")}
 
