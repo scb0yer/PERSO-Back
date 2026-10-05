@@ -9,11 +9,18 @@ const MongoStore = require("connect-mongo");
 const app = express();
 
 const mongoUrl = process.env.MONGODB_URL + "Perso";
-const frontendOrigin = process.env.FRONTEND_ORIGIN;
+const allowedOrigins = (
+  process.env.FRONTEND_ORIGINS ||
+  process.env.FRONTEND_ORIGIN ||
+  ""
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 const production = process.env.NODE_ENV === "production";
 
 if (
-  !frontendOrigin ||
+  allowedOrigins.length === 0 ||
   !process.env.SESSION_SECRET ||
   process.env.SESSION_SECRET.length < 32
 ) {
@@ -35,7 +42,7 @@ if (proxyHops > 0) {
 
 // CORS avec cookies pour SEGPA, comportement existant pour les autres projets.
 const segpaCors = cors({
-  origin: frontendOrigin,
+  origin: allowedOrigins,
   credentials: true,
 });
 
@@ -54,7 +61,7 @@ app.use("/segpa", (req, res, next) => {
   res.set("Cache-Control", "no-store");
 
   if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
-    if (req.get("origin") !== frontendOrigin) {
+    if (!allowedOrigins.includes(req.get("origin"))) {
       return res.status(403).json({ error: "Origine interdite." });
     }
 
