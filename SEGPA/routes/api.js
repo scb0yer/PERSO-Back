@@ -77,6 +77,14 @@ router.post(
   }),
 );
 
+const createStudent = require("./create-student")({
+  Student,
+  Classe,
+  bcrypt,
+});
+
+router.post("/students", wrap(createStudent));
+
 // Toutes les routes suivantes nécessitent une session valide.
 router.use(
   wrap(async (req, res, next) => {
@@ -158,12 +166,10 @@ router.post(
   "/attempt",
   wrap(async (req, res) => {
     if (!validAttempt(req.body))
-      return res
-        .status(400)
-        .json({
-          error:
-            "Tentative invalide : exerciceId, submissionId, score et maxScore requis.",
-        });
+      return res.status(400).json({
+        error:
+          "Tentative invalide : exerciceId, submissionId, score et maxScore requis.",
+      });
     const { exerciceId, submissionId, score, maxScore } = req.body;
     // Si le navigateur renvoie la même soumission, aucune seconde contribution.
     const previous = await Attempt.findOne({
