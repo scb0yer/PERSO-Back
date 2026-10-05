@@ -87,8 +87,8 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      secure: production,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 8 * 60 * 60 * 1000,
       path: "/",
     },
