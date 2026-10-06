@@ -20,9 +20,22 @@ const schema = new mongoose.Schema({
   maxScore: { type: Number, required: true, min: 1 },
   scoreVerified: { type: Boolean, default: false },
   submissionId: { type: String, required: true },
+  pointsAwardedTenths: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 10,
+    validate: Number.isInteger,
+  },
+  // Jour civil à Paris, calculé par le serveur. Pas de valeur par défaut pour les anciennes tentatives.
+  rewardDay: String,
+  exerciseDayTenthsAfter: { type: Number, min: 0, max: 10 },
+  pointsRuleVersion: Number,
   date: { type: Date, default: Date.now },
 });
 schema.index({ studentId: 1, date: -1 });
 schema.index({ classId: 1 });
+schema.index({ studentId: 1, exerciceId: 1, rewardDay: 1 });
+schema.index({ studentId: 1, rewardDay: 1 });
 schema.index({ studentId: 1, submissionId: 1 }, { unique: true });
 module.exports = mongoose.model("Attempt", schema);

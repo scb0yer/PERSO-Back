@@ -8,6 +8,15 @@ const schema = new mongoose.Schema({
     ref: "Classe",
     required: true,
   },
+  // Total cumulé en dixièmes : 17 = 1,7 point. Le backend seul le modifie.
+  pointsTenths: {
+    type: Number,
+    default: 0,
+    min: 0,
+    validate: Number.isSafeInteger,
+  },
+  // Compteur interne pour sérialiser les transactions de crédit concurrentes.
+  pointsRevision: { type: Number, default: 0, select: false },
   avatar: { type: String, default: "" },
 });
 module.exports = mongoose.model("Student", schema);
