@@ -8,6 +8,7 @@ const Exercice = require("../models/Exercice");
 const { validAttempt, percent } = require("../validation");
 const recordAttempt = require("../services/record-attempt");
 const { parisDay } = require("../services/points-rules");
+const weekly = require("../services/weekly-results");
 const router = express.Router();
 const wrap = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -27,12 +28,8 @@ const profile = (s) => ({
   pointsTenths: s.pointsTenths || 0,
   points: (s.pointsTenths || 0) / 10,
 });
-const createStudent = require("./create-student")({
-  Student,
-  Classe,
-  bcrypt,
-});
 
+const createStudent = require("./create-student")({ Student, Classe, bcrypt });
 router.post("/students", wrap(createStudent));
 
 router.post(
@@ -81,12 +78,15 @@ router.post(
     res.clearCookie("eleves.sid", {
       path: "/",
       httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      secure: true,
     });
     res.status(204).end();
   }),
 );
+
+// Accès enseignant par clé ; jamais de clé d'administration dans le frontend.
+router.use("/admin", require("./weekly-admin"));
 
 // Toutes les routes suivantes nécessitent une session valide.
 router.use(
@@ -100,30 +100,29 @@ router.use(
   }),
 );
 
-async function classDashboard(classId) {
-  const classe = await Classe.findById(classId).lean();
-  if (!classe) return null;
-  const [attemptCount, studentCount] = await Promise.all([
-    Attempt.countDocuments({ classId: classe._id }),
-    Student.countDocuments({ classe: classe._id }),
-  ]);
+async function classDashboard(classe, now) {
+  const snapshot = weekly.summarize(classe, now);
+  const current = snapshot.current;
+  const studentCount = await Student.countDocuments({ classe: classe._id });
   return {
     id: classe._id,
     name: classe.name,
-    target: classe.target || 0,
-    attemptCount,
     studentCount,
-    percentage: percent(attemptCount, classe.target),
-    goalConfigured: classe.target > 0,
-    metric: "recordedAttempts",
-    period: "allTime",
+    target: current.targetTenths / 10,
+    points: current.pointsTenths / 10,
+    percentage: current.percentage,
+    goalConfigured: true,
+    metric: "weeklyPoints",
+    period: "week",
+    ...snapshot,
   };
 }
 
 router.get(
   "/students/me/dashboard",
   wrap(async (req, res) => {
-    const day = parisDay();
+    const snapshot = await weekly.dashboardSnapshot(req.student._id);
+    const day = parisDay(snapshot.referenceAt);
     const [stats, recentAttempts, classe, dailyPoints] = await Promise.all([
       Attempt.aggregate([
         { $match: { studentId: req.student._id } },
@@ -148,7 +147,7 @@ router.get(
         .limit(10)
         .populate("exerciceId", "name subject area difficulty")
         .lean(),
-      classDashboard(req.student.classe),
+      classDashboard(snapshot.classe, snapshot.referenceAt),
       Attempt.aggregate([
         { $match: { studentId: req.student._id, rewardDay: day } },
         {
@@ -160,7 +159,8 @@ router.get(
       ]),
     ]);
     res.json({
-      student: profile(req.student),
+      student: profile(snapshot.student),
+      weekly: weekly.summarize(snapshot.student, snapshot.referenceAt),
       stats: {
         attemptCount: stats[0]?.attemptCount || 0,
         averagePercentage:
@@ -168,8 +168,8 @@ router.get(
             ? null
             : Math.round(stats[0].averagePercentage),
         scoreSource: "client-unverified",
-        totalPointsTenths: req.student.pointsTenths || 0,
-        totalPoints: (req.student.pointsTenths || 0) / 10,
+        totalPointsTenths: snapshot.student.pointsTenths || 0,
+        totalPoints: (snapshot.student.pointsTenths || 0) / 10,
         todayPointsTenths: dailyPoints.reduce(
           (sum, item) => sum + item.pointsTenths,
           0,
@@ -231,7 +231,11 @@ router.get(
       return res.status(400).json({ error: "Identifiant invalide." });
     if (req.student.classe.toString() !== req.params.id.toLowerCase())
       return res.status(403).json({ error: "Accès limité à votre classe." });
-    const dashboard = await classDashboard(req.student.classe);
+    const snapshot = await weekly.dashboardSnapshot(req.student._id);
+    const dashboard = await classDashboard(
+      snapshot.classe,
+      snapshot.referenceAt,
+    );
     if (!dashboard)
       return res.status(404).json({ error: "Classe introuvable." });
     res.json(dashboard);
