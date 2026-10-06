@@ -34,8 +34,10 @@ module.exports = async function recordAttempt(studentId, input) {
         totalTenths: student.pointsTenths || 0,
       } };
     }
-    awardedTenths(score, maxScore, 0); // Validation avant toute écriture définitive.
-    if (!await Exercice.exists({ _id: exerciceId }).session(session)) throw fail(404, 'Exercice introuvable.');
+    const exercise = await Exercice.findById(exerciceId).select('rewardPolicy').session(session);
+    if (!exercise) throw fail(404, 'Exercice introuvable.');
+    const rewardPolicy = exercise.rewardPolicy || 'standard5';
+    awardedTenths(score, maxScore, 0, rewardPolicy); // Validation avant toute écriture définitive.
     if (!await Classe.exists({ _id: student.classe }).session(session)) throw fail(409, 'Classe introuvable.');
     const totals = await Attempt.aggregate([
       { $match: { studentId: student._id, exerciceId, rewardDay } },
@@ -45,7 +47,7 @@ module.exports = async function recordAttempt(studentId, input) {
     const classBefore = await weekly.refreshClass(classe, session, receivedAt);
     const studentBefore = await weekly.refreshStudent(student, session, receivedAt, classBefore);
     const week = currentWeek(receivedAt);
-    const gain = awardedTenths(score, maxScore, alreadyEarned);
+    const gain = awardedTenths(score, maxScore, alreadyEarned, rewardPolicy);
     const dayTotal = alreadyEarned + gain;
     const [attempt] = await Attempt.create([{
       studentId: student._id, classId: student.classe, exerciceId, submissionId,
