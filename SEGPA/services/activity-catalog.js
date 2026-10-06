@@ -27,4 +27,14 @@ module.exports = [
     activity: "diviseurs",
     mode: "list",
   },
+  {
+    exerciceId: "6ac54524d53233f67aed5e84",
+    activity: "pgcd",
+    mode: "choose",
+  },
+  {
+    exerciceId: "6ac54536d53233f67aed5e85",
+    activity: "pgcd",
+    mode: "write",
+  },
 ].filter((item) => /^[a-f0-9]{24}$/i.test(item.exerciceId));
