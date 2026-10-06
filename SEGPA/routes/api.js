@@ -9,6 +9,7 @@ const { validAttempt, percent } = require("../validation");
 const recordAttempt = require("../services/record-attempt");
 const { parisDay } = require("../services/points-rules");
 const weekly = require("../services/weekly-results");
+const getSuggestions = require("../services/suggestions");
 const router = express.Router();
 const wrap = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -123,7 +124,7 @@ router.get(
   wrap(async (req, res) => {
     const snapshot = await weekly.dashboardSnapshot(req.student._id);
     const day = parisDay(snapshot.referenceAt);
-    const [stats, recentAttempts, classe, dailyPoints] = await Promise.all([
+    const [stats, recentAttempts, classe, dailyPoints, suggestions] = await Promise.all([
       Attempt.aggregate([
         { $match: { studentId: req.student._id } },
         {
@@ -157,8 +158,11 @@ router.get(
           },
         },
       ]),
+      getSuggestions(req.student._id, snapshot.referenceAt),
     ]);
+    res.set("Cache-Control", "private, no-store");
     res.json({
+      suggestions,
       student: profile(snapshot.student),
       weekly: weekly.summarize(snapshot.student, snapshot.referenceAt),
       stats: {
