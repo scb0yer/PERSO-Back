@@ -37,4 +37,14 @@ module.exports = [
     activity: "pgcd",
     mode: "write",
   },
+  {
+    exerciceId: "6ac55603d53233f67aed5e86",
+    activity: "fractions",
+    mode: "factors",
+  },
+  {
+    exerciceId: "6ac55634d53233f67aed5e87",
+    activity: "fractions",
+    mode: "gcd",
+  },
 ].filter((item) => /^[a-f0-9]{24}$/i.test(item.exerciceId));
