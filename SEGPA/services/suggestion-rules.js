@@ -3,8 +3,13 @@ const HISTORY_WINDOW = 5;
 
 // Fonction pure : les tentatives de chaque activité sont déjà triées par date
 // décroissante et limitées aux cinq dernières par la requête MongoDB.
-function rankSuggestions(activities, now = new Date()) {
+function rankSuggestions(activities, now = new Date(), practicedThemes = []) {
   const day = parisDay(now);
+  const themeOf = activity => activity.activity || `exercise:${activity.exerciceId}`;
+  const blockedThemes = new Set(practicedThemes);
+  for (const activity of activities) {
+    if (activity.attempts.some(a => parisDay(new Date(a.date)) === day)) blockedThemes.add(themeOf(activity));
+  }
   let completedToday = 0;
   const candidates = [];
   for (const activity of activities) {
@@ -14,8 +19,8 @@ function rankSuggestions(activities, now = new Date()) {
     // de points reste une activité terminée aujourd'hui.
     if (lastAttempt && parisDay(new Date(lastAttempt.date)) === day) {
       completedToday++;
-      continue;
     }
+    if (blockedThemes.has(themeOf(activity))) continue;
     const percentages = attempts
       .filter(a => Number.isFinite(a.score) && Number.isFinite(a.maxScore)
         && a.maxScore > 0 && a.score >= 0 && a.score <= a.maxScore)
@@ -47,14 +52,25 @@ function rankSuggestions(activities, now = new Date()) {
     // Égalité parfaite : ordre déterministe, pas de tirage au sort quotidien.
     return a.exerciceId < b.exerciceId ? -1 : a.exerciceId > b.exerciceId ? 1 : 0;
   });
+  // Deux propositions de thèmes différents : choisir l'une ne rend pas l'autre inéligible.
+  const selected = [];
+  const selectedThemes = new Set();
+  for (const candidate of candidates) {
+    const theme = themeOf(candidate);
+    if (selectedThemes.has(theme)) continue;
+    selected.push(candidate); selectedThemes.add(theme);
+    if (selected.length === 2) break;
+  }
   return {
     day,
+    completedThemesToday: blockedThemes.size,
+    remainingThemesToday: new Set(candidates.map(themeOf)).size,
     timeZone: "Europe/Paris",
     historyWindow: HISTORY_WINDOW,
     totalActivities: activities.length,
     completedToday,
     remainingToday: candidates.length,
-    items: candidates.slice(0, 2).map(item => ({
+    items: selected.map(item => ({
       ...item,
       recentAveragePercentage: item.recentAveragePercentage === null
         ? null : Math.round(item.recentAveragePercentage * 100) / 100,

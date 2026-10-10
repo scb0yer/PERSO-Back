@@ -31,13 +31,13 @@ function exerciseStats(exercises, rows, studentCount) {
     const own=rows.filter(r=>String(r._id.exercise)===String(ex._id));
     const attempts=own.reduce((sum,r)=>sum+r.count,0);
     return {id:String(ex._id),name:ex.name,area:ex.area||ex.subject||'Mathématiques',participants:own.length,attempts,
-      attemptsPerStudent:studentCount ? attempts/studentCount : 0,
+      attemptsPerStudent:own.length ? attempts/own.length : null,
       successRate:mean(own.filter(r=>r.success!=null).map(r=>r.success*100))};
   });
-  const attemptsBenchmark=mean(stats.map(s=>s.attemptsPerStudent));
+  const attemptsBenchmark=mean(stats.filter(s=>s.attemptsPerStudent!=null).map(s=>s.attemptsPerStudent));
   const successBenchmark=mean(stats.filter(s=>s.successRate!=null).map(s=>s.successRate));
   return {attemptsBenchmark:round(attemptsBenchmark),successBenchmark:round(successBenchmark),rows:stats.map(s=>({...s,
-    lowAttempts:s.attemptsPerStudent<attemptsBenchmark,
+    lowAttempts:s.attemptsPerStudent!=null && attemptsBenchmark!=null && s.attemptsPerStudent<attemptsBenchmark,
     lowSuccess:s.successRate!=null && successBenchmark!=null && s.successRate<successBenchmark,
     attemptsPerStudent:round(s.attemptsPerStudent),successRate:round(s.successRate)}))};
 }

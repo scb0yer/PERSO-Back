@@ -5,6 +5,7 @@ const Exercice = require('../models/Exercice');
 const Classe = require('../models/Class');
 const { parisDay, awardedTenths, DAY_CAP } = require('./points-rules');
 const weekly = require('./weekly-results');
+const { themeFor, idsForTheme } = require('./theme-rules');
 const { currentWeek } = require('./week-rules');
 const fail = (status, message) => Object.assign(new Error(message), { status });
 
@@ -14,6 +15,8 @@ module.exports = async function recordAttempt(studentId, input) {
   const exerciceId = new mongoose.Types.ObjectId(input.exerciceId);
   const receivedAt = new Date();
   const rewardDay = parisDay(receivedAt);
+  const rewardTheme = themeFor(exerciceId);
+  const themeExerciseIds = idsForTheme(exerciceId).map(id => new mongoose.Types.ObjectId(id));
   return mongoose.connection.transaction(async session => {
     const seed = await Student.findById(studentId).session(session);
     if (!seed) throw fail(401, 'Compte introuvable.');
@@ -26,6 +29,9 @@ module.exports = async function recordAttempt(studentId, input) {
       // Un ancien envoi, même renvoyé le lendemain, ne rapporte rien de plus.
       return { attempt: previous.toObject(), replayed: true, reward: {
         creditedTenths: 0,
+        rewardScope: previous.rewardTheme ? 'theme' : 'exercise',
+        rewardTheme: previous.rewardTheme || null,
+        themeDayTenths: previous.themeDayTenthsAfter ?? null,
         weeklyContribution: previous.weeklyContribution || null,
         attemptAwardedTenths: previous.pointsAwardedTenths || 0,
         day: previous.rewardDay || null,
@@ -40,7 +46,9 @@ module.exports = async function recordAttempt(studentId, input) {
     awardedTenths(score, maxScore, 0, rewardPolicy); // Validation avant toute écriture définitive.
     if (!await Classe.exists({ _id: student.classe }).session(session)) throw fail(409, 'Classe introuvable.');
     const totals = await Attempt.aggregate([
-      { $match: { studentId: student._id, exerciceId, rewardDay } },
+      { $match: { studentId: student._id, rewardDay, $or: [
+        { rewardTheme }, { exerciceId: { $in: themeExerciseIds } },
+      ] } },
       { $group: { _id: null, total: { $sum: '$pointsAwardedTenths' } } },
     ]).session(session);
     const alreadyEarned = totals[0]?.total || 0;
@@ -52,7 +60,8 @@ module.exports = async function recordAttempt(studentId, input) {
     const [attempt] = await Attempt.create([{
       studentId: student._id, classId: student.classe, exerciceId, submissionId,
       score, maxScore, scoreVerified: false, date: receivedAt,
-      rewardDay, pointsAwardedTenths: gain, exerciseDayTenthsAfter: dayTotal,
+      rewardDay, rewardTheme, themeDayTenthsAfter: dayTotal,
+      pointsAwardedTenths: gain, exerciseDayTenthsAfter: Math.min(DAY_CAP, dayTotal),
       pointsRuleVersion: 1,
     }], { session });
     await Student.updateOne({ _id: student._id }, { $inc: { pointsTenths: gain } }, { session });
@@ -67,6 +76,7 @@ module.exports = async function recordAttempt(studentId, input) {
     return { attempt: { ...attempt.toObject(), weeklyContribution: contribution }, replayed: false, reward: {
       weeklyContribution: contribution,
       creditedTenths: gain, attemptAwardedTenths: gain, day: rewardDay,
+      rewardScope: 'theme', rewardTheme, themeDayTenths: dayTotal,
       exerciseDayTenths: dayTotal, remainingTenths: Math.max(0, DAY_CAP - dayTotal),
       totalTenths: (student.pointsTenths || 0) + gain,
     } };

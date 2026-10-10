@@ -1,3 +1,6 @@
+const mongoose = require("mongoose");
+const { parisDay } = require("./points-rules");
+const { themeFor } = require("./theme-rules");
 const Attempt = require("../models/Attempt");
 const Exercice = require("../models/Exercice");
 const catalog = require("./activity-catalog");
@@ -20,5 +23,13 @@ module.exports = async function suggestions(studentId, now = new Date()) {
     }).select("score maxScore date")
       .sort({ date: -1, _id: -1 }).limit(HISTORY_WINDOW).lean(),
   })));
-  return rankSuggestions(activities, now);
+  // Inclut aussi un niveau retiré des suggestions après avoir été pratiqué aujourd'hui.
+  const today = await Attempt.aggregate([
+    { $match: { studentId: new mongoose.Types.ObjectId(String(studentId)), date: { $lte: now } } },
+    { $set: { suggestionDay: { $dateToString: { date: "$date", format: "%Y-%m-%d", timezone: "Europe/Paris" } } } },
+    { $match: { suggestionDay: parisDay(now) } },
+    { $group: { _id: { exercise: "$exerciceId", theme: "$rewardTheme" } } },
+  ]);
+  const practicedThemes = today.flatMap(row => [themeFor(row._id.exercise), row._id.theme].filter(Boolean));
+  return rankSuggestions(activities, now, practicedThemes);
 };

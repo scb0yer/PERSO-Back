@@ -10,6 +10,7 @@ const recordAttempt = require("../services/record-attempt");
 const { parisDay } = require("../services/points-rules");
 const weekly = require("../services/weekly-results");
 const getSuggestions = require("../services/suggestions");
+const { themeFor, themeTotals } = require("../services/theme-rules");
 const router = express.Router();
 const wrap = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -160,6 +161,7 @@ router.get(
       ]),
       getSuggestions(req.student._id, snapshot.referenceAt),
     ]);
+    const dailyThemes = themeTotals(dailyPoints);
     res.set("Cache-Control", "private, no-store");
     res.json({
       suggestions,
@@ -186,11 +188,17 @@ router.get(
       rewards: {
         day,
         timeZone: "Europe/Paris",
-        dailyCapPerExerciseTenths: 10,
+        rewardScope: "theme",
+        dailyCapPerThemeTenths: 10,
+        dailyCapPerExerciseTenths: 10, // Alias conservé pour les anciens composants.
+        themes: Array.from(dailyThemes, ([theme, pointsTenths]) => ({
+          theme, pointsTenths, remainingTenths: Math.max(0, 10 - pointsTenths),
+        })),
         exercises: dailyPoints.map((item) => ({
           exerciceId: item._id,
           pointsTenths: item.pointsTenths,
-          remainingTenths: Math.max(0, 10 - item.pointsTenths),
+          theme: themeFor(item._id),
+          remainingTenths: Math.max(0, 10 - (dailyThemes.get(themeFor(item._id)) || 0)),
         })),
       },
     });
