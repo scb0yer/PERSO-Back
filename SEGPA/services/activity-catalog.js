@@ -47,4 +47,19 @@ module.exports = [
     activity: "fractions",
     mode: "gcd",
   },
+  {
+    exerciceId: "6aca6cf3898086337989c2fa",
+    activity: "additions et soustractions de fractions",
+    mode: "same",
+  },
+  {
+    exerciceId: "6aca6d36898086337989c2fb",
+    activity: "additions et soustractions de fractions",
+    mode: "multiple",
+  },
+  {
+    exerciceId: "6aca6d41898086337989c2fc",
+    activity: "additions et soustractions de fractions",
+    mode: "product",
+  },
 ].filter((item) => /^[a-f0-9]{24}$/i.test(item.exerciceId));
