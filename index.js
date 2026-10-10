@@ -73,6 +73,15 @@ app.use("/segpa", (req, res, next) => {
   next();
 });
 
+// Connexion professeur indépendante de celle des élèves.
+// À placer AVANT la session et les routes élèves.
+app.use('/segpa/prof', session({
+  name: 'prof.sid', secret: process.env.SESSION_SECRET,
+  resave: false, saveUninitialized: false,
+  store: MongoStore.create({mongoUrl, collectionName: 'teacherSessions'}),
+  cookie: {httpOnly: true, secure: true, sameSite: 'none', maxAge: 8 * 60 * 60 * 1000, path: '/'},
+}), require('./SEGPA/routes/prof'));
+
 // Sessions réservées aux routes SEGPA.
 app.use(
   "/segpa",
@@ -164,6 +173,7 @@ async function start() {
   await Promise.all([
     require("./SEGPA/models/Student").init(),
     require("./SEGPA/models/Attempt").init(),
+    require("./SEGPA/models/TeacherSettings").init(),
   ]);
 
   app.listen(process.env.PORT || 3001, () => {
