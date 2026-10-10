@@ -62,4 +62,14 @@ module.exports = [
     activity: "additions et soustractions de fractions",
     mode: "product",
   },
+  {
+    exerciceId: "6aca9113898086337989c2fd",
+    activity: "multiplication de fractions",
+    mode: "integer",
+  },
+  {
+    exerciceId: "6aca913b898086337989c2fe",
+    activity: "multiplication de fractions",
+    mode: "fractions",
+  },
 ].filter((item) => /^[a-f0-9]{24}$/i.test(item.exerciceId));
