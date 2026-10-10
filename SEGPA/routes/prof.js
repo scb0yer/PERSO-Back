@@ -36,6 +36,9 @@ router.get('/classes/:id/dashboard',wrap(async(req,res)=>{
   if(!validWeek(week)||week>currentWeek()||week<'2000-01-03')throw fail(400,'Choisissez un lundi passé ou le lundi de cette semaine.');
   res.json(await dashboard(req.params.id,week));
 }));
+router.get('/classes/:id/students/:studentId/activity',wrap(async(req,res)=>{
+  res.json(await require('../services/teacher-student-activity')(req.params.id,req.params.studentId,req.query.cursor));
+}));
 async function settingsFor(req) {
   const settings=await Settings.findOne({classId:req.params.id}).lean();
   if(!settings)throw fail(409,'Ouvrez le tableau de bord de cette classe avant de modifier ses périodes.');
